@@ -1,0 +1,2619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AegisMesh AI — Agentic AI Governance Control Plane</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-slate: #090d16;
+      --bg-card: rgba(15, 23, 42, 0.85);
+      --bg-card-hover: rgba(30, 41, 59, 0.9);
+      --border-color: rgba(51, 65, 85, 0.6);
+      --border-accent: rgba(99, 102, 241, 0.4);
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      --accent-indigo: #6366f1;
+      --accent-indigo-hover: #4f46e5;
+      
+      --color-approve: #10b981;
+      --bg-approve: rgba(16, 185, 129, 0.15);
+      --border-approve: rgba(16, 185, 129, 0.4);
+      
+      --color-modify: #f59e0b;
+      --bg-modify: rgba(245, 158, 11, 0.15);
+      --border-modify: rgba(245, 158, 11, 0.4);
+      
+      --color-escalate: #f97316;
+      --bg-escalate: rgba(249, 115, 22, 0.15);
+      --border-escalate: rgba(249, 115, 22, 0.4);
+      
+      --color-reject: #ef4444;
+      --bg-reject: rgba(239, 68, 68, 0.15);
+      --border-reject: rgba(239, 68, 68, 0.4);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg-slate);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background-image: 
+        radial-gradient(circle at 15% 15%, rgba(99, 102, 241, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 85% 85%, rgba(16, 185, 129, 0.05) 0%, transparent 40%);
+    }
+
+    /* Scrollbar styling */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: rgba(9, 13, 22, 0.8); }
+    ::-webkit-scrollbar-thumb { background: rgba(51, 65, 85, 0.8); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--accent-indigo); }
+
+    /* Header */
+    header {
+      border-bottom: 1px solid var(--border-color);
+      background: rgba(9, 13, 22, 0.95);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      padding: 0.85rem 2rem;
+    }
+    
+    .header-container {
+      max-width: 1440px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .brand-icon {
+      width: 42px;
+      height: 42px;
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.3), rgba(79, 70, 229, 0.6));
+      border: 1px solid rgba(165, 180, 252, 0.4);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 16px rgba(99, 102, 241, 0.3);
+    }
+
+    .brand-title h1 {
+      font-size: 1.25rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+
+    .brand-title p {
+      font-size: 0.72rem;
+      color: var(--text-secondary);
+    }
+
+    /* Nav Tabs */
+    .nav-tabs {
+      display: flex;
+      gap: 0.4rem;
+      background: rgba(15, 23, 42, 0.6);
+      padding: 0.25rem;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+    }
+
+    .nav-tab {
+      padding: 0.45rem 0.85rem;
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: transparent;
+      border: none;
+    }
+
+    .nav-tab:hover {
+      color: var(--text-primary);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .nav-tab.active {
+      background: var(--accent-indigo);
+      color: white;
+      font-weight: 600;
+      box-shadow: 0 2px 10px rgba(99, 102, 241, 0.35);
+    }
+
+    .status-pills {
+      display: flex;
+      gap: 0.6rem;
+      align-items: center;
+    }
+
+    .pill {
+      font-size: 0.72rem;
+      padding: 0.35rem 0.75rem;
+      border-radius: 9999px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: rgba(30, 41, 59, 0.6);
+      border: 1px solid var(--border-color);
+    }
+
+    .pill-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--color-approve);
+      box-shadow: 0 0 8px var(--color-approve);
+    }
+
+    .pill-granite {
+      background: rgba(99, 102, 241, 0.12);
+      border: 1px solid rgba(99, 102, 241, 0.35);
+      color: #a5b4fc;
+    }
+
+    /* Main Layout */
+    main {
+      flex: 1;
+      max-width: 1440px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 1.5rem 2rem 3rem;
+    }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    .grid-container {
+      display: grid;
+      grid-template-columns: 440px 1fr;
+      gap: 1.5rem;
+    }
+
+    @media (max-width: 1024px) {
+      .grid-container { grid-template-columns: 1fr; }
+    }
+
+    /* Hero Story Card */
+    .hero-story-card {
+      background: linear-gradient(135deg, rgba(30, 41, 59, 0.85), rgba(15, 23, 42, 0.95));
+      border: 1px solid var(--border-accent);
+      border-radius: 14px;
+      padding: 1.5rem 1.75rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-story-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; height: 3px;
+      background: linear-gradient(90deg, #6366f1, #10b981, #f59e0b, #ef4444);
+    }
+
+    .hero-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .hero-desc {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    /* Visual Pipeline Sequence Strip */
+    .pipeline-flow-strip {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      overflow-x: auto;
+      padding: 0.75rem 1rem;
+      background: rgba(9, 13, 22, 0.8);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      margin-bottom: 1.25rem;
+      font-size: 0.68rem;
+    }
+
+    .flow-node {
+      padding: 0.35rem 0.6rem;
+      background: rgba(30, 41, 59, 0.8);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      color: var(--text-primary);
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .flow-node.active {
+      border-color: var(--accent-indigo);
+      background: rgba(99, 102, 241, 0.15);
+      color: #a5b4fc;
+    }
+
+    .flow-arrow {
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+
+    /* Card Panels */
+    .panel {
+      background: var(--bg-card);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 1.35rem;
+      margin-bottom: 1.25rem;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+    }
+
+    .panel-title {
+      font-size: 0.82rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-secondary);
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* Metrics Grid */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .metrics-grid-6 {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 0.85rem;
+      margin-bottom: 1.5rem;
+    }
+
+    @media (max-width: 1200px) {
+      .metrics-grid-6 { grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (max-width: 768px) {
+      .metrics-grid, .metrics-grid-6 { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    .metric-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 1.25rem 1rem;
+      text-align: center;
+      transition: all 0.2s ease;
+    }
+
+    .metric-card:hover {
+      border-color: var(--accent-indigo);
+      transform: translateY(-1px);
+    }
+
+    .metric-value {
+      font-size: 1.85rem;
+      font-weight: 800;
+      margin-top: 0.25rem;
+    }
+
+    .metric-label {
+      font-size: 0.72rem;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    /* Presets */
+    .presets-group {
+      margin-bottom: 1.25rem;
+    }
+
+    .preset-btn {
+      width: 100%;
+      text-align: left;
+      padding: 0.65rem 0.85rem;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      background: rgba(15, 23, 42, 0.6);
+      color: var(--text-primary);
+      font-size: 0.8rem;
+      font-family: inherit;
+      cursor: pointer;
+      margin-bottom: 0.5rem;
+      transition: all 0.2s ease;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .preset-btn:hover {
+      background: rgba(30, 41, 59, 0.8);
+      border-color: var(--accent-indigo);
+    }
+
+    .badge {
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 0.2rem 0.55rem;
+      border-radius: 4px;
+      text-transform: uppercase;
+    }
+
+    .badge-approve { background: var(--bg-approve); color: var(--color-approve); border: 1px solid var(--border-approve); }
+    .badge-modify { background: var(--bg-modify); color: var(--color-modify); border: 1px solid var(--border-modify); }
+    .badge-escalate { background: var(--bg-escalate); color: var(--color-escalate); border: 1px solid var(--border-escalate); }
+    .badge-reject { background: var(--bg-reject); color: var(--color-reject); border: 1px solid var(--border-reject); }
+
+    /* Form */
+    .form-group {
+      margin-bottom: 0.9rem;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+    }
+
+    label {
+      display: block;
+      font-size: 0.73rem;
+      color: var(--text-secondary);
+      margin-bottom: 0.3rem;
+      font-weight: 500;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 0.6rem 0.8rem;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      background: rgba(9, 13, 22, 0.8);
+      color: var(--text-primary);
+      font-family: inherit;
+      font-size: 0.85rem;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--accent-indigo);
+      box-shadow: 0 0 12px rgba(99, 102, 241, 0.3);
+    }
+
+    .btn-submit {
+      width: 100%;
+      padding: 0.85rem;
+      border-radius: 8px;
+      border: none;
+      background: linear-gradient(135deg, #6366f1, #4f46e5);
+      color: white;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(99, 102, 241, 0.4);
+      transition: all 0.2s ease;
+      margin-top: 0.5rem;
+    }
+
+    .btn-submit:hover { opacity: 0.95; transform: translateY(-1px); }
+
+    /* Decision Banner */
+    .decision-banner {
+      padding: 1.35rem 1.5rem;
+      border-radius: 12px;
+      margin-bottom: 1.25rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
+    .decision-title {
+      font-size: 1.6rem;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+    }
+
+    .decision-desc {
+      font-size: 0.85rem;
+      margin-top: 0.25rem;
+      color: var(--text-secondary);
+    }
+
+    /* Pipeline Cards */
+    .pipeline-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+
+    @media (max-width: 1200px) {
+      .pipeline-grid { grid-template-columns: repeat(4, 1fr); }
+    }
+
+    .agent-card {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 0.65rem;
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .agent-card:hover {
+      border-color: var(--accent-indigo);
+      transform: translateY(-2px);
+    }
+
+    .agent-card.completed {
+      border-color: var(--color-approve);
+    }
+
+    .agent-name { font-weight: 600; margin-bottom: 0.2rem; display: flex; align-items: center; justify-content: space-between; }
+    .agent-status { font-size: 0.65rem; color: var(--text-muted); }
+
+    /* Risk Score Gauge */
+    .risk-meter-container {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      margin: 0.75rem 0;
+    }
+
+    .score-circle {
+      width: 95px;
+      height: 95px;
+      border-radius: 50%;
+      border: 5px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .score-num { font-size: 1.85rem; font-weight: 800; }
+
+    .risk-factors {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5rem;
+      width: 100%;
+    }
+
+    .factor-item {
+      background: rgba(9, 13, 22, 0.6);
+      padding: 0.45rem 0.75rem;
+      border-radius: 6px;
+      font-size: 0.7rem;
+    }
+
+    /* Decision Rationale List */
+    .rationale-list {
+      margin-top: 0.75rem;
+      background: rgba(9, 13, 22, 0.6);
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      font-size: 0.8rem;
+    }
+
+    .rationale-item {
+      margin-bottom: 0.4rem;
+      color: var(--text-secondary);
+    }
+    .rationale-item:last-child { margin-bottom: 0; font-weight: 600; color: var(--text-primary); }
+
+    /* Action Simulation Box */
+    .sim-box {
+      background: rgba(9, 13, 22, 0.8);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 1rem;
+      margin-top: 0.5rem;
+    }
+
+    .sim-flow {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      margin-bottom: 0.75rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .sim-node {
+      background: rgba(30, 41, 59, 0.8);
+      padding: 0.4rem 0.75rem;
+      border-radius: 6px;
+      font-weight: 500;
+    }
+
+    .sim-steps { font-size: 0.75rem; color: var(--text-secondary); }
+    .sim-step { margin-bottom: 0.3rem; }
+
+    /* Diff Box */
+    .diff-box {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      background: #06090e;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 0.85rem;
+      margin-top: 0.75rem;
+    }
+
+    .diff-del { color: #f87171; background: rgba(239, 68, 68, 0.1); padding: 0.25rem; display: block; border-radius: 4px; margin-bottom: 0.3rem; }
+    .diff-add { color: #34d399; background: rgba(16, 185, 129, 0.1); padding: 0.25rem; display: block; border-radius: 4px; }
+
+    /* Remediation Applied Box */
+    .remediation-applied-box {
+      background: rgba(16, 185, 129, 0.08);
+      border: 1px solid var(--border-approve);
+      border-radius: 12px;
+      padding: 1.1rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .rem-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.85rem;
+    }
+
+    .rem-comparison {
+      display: grid;
+      grid-template-columns: 1fr 30px 1fr;
+      gap: 0.75rem;
+      align-items: center;
+      background: rgba(9, 13, 22, 0.6);
+      padding: 0.85rem;
+      border-radius: 8px;
+      margin-bottom: 0.75rem;
+    }
+
+    .rem-col { display: flex; flex-direction: column; gap: 0.25rem; }
+    .rem-title { font-size: 0.65rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+    .rem-arrow { font-size: 1.2rem; color: var(--accent-indigo); text-align: center; font-weight: 700; }
+
+    /* Evidence List */
+    .evidence-item {
+      background: rgba(9, 13, 22, 0.6);
+      border-left: 3px solid var(--accent-indigo);
+      padding: 0.85rem 1rem;
+      border-radius: 0 8px 8px 0;
+      margin-bottom: 0.75rem;
+      font-size: 0.8rem;
+    }
+
+    .evidence-header {
+      display: flex;
+      justify-content: space-between;
+      font-weight: 600;
+      margin-bottom: 0.35rem;
+    }
+
+    /* Table */
+    table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+    th, td { padding: 0.65rem 0.75rem; text-align: left; border-bottom: 1px solid var(--border-color); }
+    th { color: var(--text-muted); font-weight: 500; font-size: 0.7rem; text-transform: uppercase; }
+
+    /* Modals */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.8);
+      backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .modal {
+      background: #0f172a;
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      width: 580px;
+      max-width: 92vw;
+      padding: 1.5rem;
+      box-shadow: 0 0 30px rgba(0,0,0,0.8);
+      max-height: 85vh;
+      overflow-y: auto;
+    }
+
+    .btn-group { display: flex; gap: 0.5rem; margin-top: 1rem; }
+    .btn { padding: 0.65rem 1.1rem; border-radius: 6px; border: none; font-weight: 600; cursor: pointer; font-size: 0.8rem; text-align: center; }
+    .btn-approve { background: var(--color-approve); color: black; }
+    .btn-reject { background: var(--color-reject); color: white; }
+    .btn-modify { background: var(--color-modify); color: black; }
+    .btn-secondary { background: rgba(51, 65, 85, 0.6); color: white; }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <div class="header-container">
+      <div class="brand">
+        <!-- Shield + Interconnected Mesh Nodes Visual Identity Icon -->
+        <div class="brand-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" fill="rgba(99, 102, 241, 0.2)" stroke="#a5b4fc" stroke-width="1.8"/>
+            <circle cx="12" cy="8" r="1.4" fill="#34d399"/>
+            <circle cx="8" cy="13" r="1.4" fill="#818cf8"/>
+            <circle cx="16" cy="13" r="1.4" fill="#818cf8"/>
+            <circle cx="12" cy="17" r="1.4" fill="#34d399"/>
+            <line x1="12" y1="8" x2="8" y2="13" stroke="#a5b4fc" stroke-width="1.2" stroke-dasharray="2 1"/>
+            <line x1="12" y1="8" x2="16" y2="13" stroke="#a5b4fc" stroke-width="1.2" stroke-dasharray="2 1"/>
+            <line x1="8" y1="13" x2="16" y2="13" stroke="#a5b4fc" stroke-width="1.2"/>
+            <line x1="8" y1="13" x2="12" y2="17" stroke="#a5b4fc" stroke-width="1.2" stroke-dasharray="2 1"/>
+            <line x1="16" y1="13" x2="12" y2="17" stroke="#a5b4fc" stroke-width="1.2" stroke-dasharray="2 1"/>
+            <line x1="12" y1="8" x2="12" y2="17" stroke="#34d399" stroke-width="1.5"/>
+          </svg>
+        </div>
+        <div class="brand-title">
+          <h1>AegisMesh AI</h1>
+          <p>Agentic AI Governance Control Plane</p>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <div class="nav-tabs">
+        <button class="nav-tab" onclick="switchTab('overview')">📊 Overview</button>
+        <button class="nav-tab active" onclick="switchTab('control-plane')">🛡️ Governance Control Plane</button>
+        <button class="nav-tab" onclick="switchTab('policy-evolution')">🧬 Policy Evolution</button>
+        <button class="nav-tab" onclick="switchTab('policies')">📜 Policies (Code)</button>
+        <button class="nav-tab" onclick="switchTab('audit')">📋 Audit Trail</button>
+        <button class="nav-tab" onclick="switchTab('agents')">🤖 Agents Matrix</button>
+      </div>
+
+      <div class="status-pills">
+        <div class="pill"><div class="pill-dot"></div> System Active</div>
+        <div class="pill pill-granite" id="provider-pill">IBM Granite 7B — Reasoning Engine</div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- TAB 1: OVERVIEW METRICS & GOVERNANCE POSTURE -->
+    <div id="tab-overview" class="tab-content">
+      <!-- Product Story Hero Banner -->
+      <div class="hero-story-card">
+        <div class="hero-title">
+          <span>🛡️ AegisMesh AI — Agentic AI Governance Control Plane</span>
+          <span class="badge badge-approve" style="font-size:0.68rem;">ENTERPRISE POSTURE ACTIVE</span>
+        </div>
+        <div class="hero-desc">
+          AI agents can take autonomous actions across enterprise tools and databases. AegisMesh intercepts and evaluates proposed actions against grounded enterprise policies and multi-dimensional risk intelligence, autonomously adapts when enterprise policies change, and enforces human review for high-impact decisions.
+        </div>
+      </div>
+
+      <!-- System Architecture & Execution Flow Card -->
+      <div class="panel" style="margin-bottom:1.5rem; background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.7)); border: 1px solid var(--border-accent);">
+        <div class="panel-title" style="color:var(--text-primary); margin-bottom:0.75rem;">
+          <span>⚡ Enterprise Architecture & Execution Flow</span>
+          <span style="font-size:0.68rem; color:var(--accent-indigo); font-weight:700;">CONTROL PLANE PATTERN</span>
+        </div>
+        
+        <div class="pipeline-flow-strip" style="background:rgba(9,13,22,0.85); padding:0.85rem 1.1rem; margin-bottom:0.5rem; border-color:rgba(99,102,241,0.3);">
+          <div class="flow-node active" style="border-color:rgba(255,255,255,0.2); color:var(--text-primary);">
+            🤖 AI AGENTS
+          </div>
+          <span class="flow-arrow">➔</span>
+
+          <div class="flow-node active" style="border-color:var(--accent-indigo); background:rgba(99,102,241,0.25); color:#ffffff; font-weight:700; box-shadow:0 0 12px rgba(99,102,241,0.3);">
+            🛡️ AEGISGRID GOVERNANCE LAYER
+          </div>
+          <span class="flow-arrow">➔</span>
+
+          <div class="flow-node active" style="border-color:rgba(16,185,129,0.4); color:#6ee7b7;">
+            📜 POLICY + RAG KNOWLEDGE
+          </div>
+          <span class="flow-arrow">➔</span>
+
+          <div class="flow-node active" style="border-color:rgba(99,102,241,0.4); color:#a5b4fc;">
+            🧠 IBM GRANITE 7B REASONING
+          </div>
+          <span class="flow-arrow">➔</span>
+
+          <div class="flow-node active" style="border-color:rgba(245,158,11,0.4); color:#fcd34d;">
+            ⚖️ RISK INTELLIGENCE
+          </div>
+          <span class="flow-arrow">➔</span>
+
+          <div class="flow-node active" style="border-color:rgba(249,115,22,0.4); color:#fdba74;">
+            🔄 DECISION / TRANSFORMATION
+          </div>
+          <span class="flow-arrow">➔</span>
+
+          <div class="flow-node active" style="border-color:rgba(16,185,129,0.4); color:#6ee7b7;">
+            📋 IMMUTABLE AUDIT TRAIL
+          </div>
+        </div>
+        <p style="font-size:0.75rem; color:var(--text-secondary); line-height:1.4; margin-top:0.5rem;">
+          AegisMesh AI acts as an authoritative control plane layer between AI agents and enterprise execution targets. IBM Granite 7B provides natural language policy reasoning while AegisMesh enforces multi-agent compliance checks, 3-stage risk modeling, action transformations, and autonomous policy evolution.
+        </p>
+      </div>
+
+      <!-- Governance at a Glance Metric Cards (6 Cards) -->
+      <div class="metrics-grid-6">
+        <div class="metric-card">
+          <div class="metric-label">Actions Evaluated</div>
+          <div class="metric-value" id="m-evaluated">14</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label" style="color: var(--color-approve);">Approved</div>
+          <div class="metric-value" style="color: var(--color-approve);" id="m-approved">6</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label" style="color: var(--color-modify);">Modified</div>
+          <div class="metric-value" style="color: var(--color-modify);" id="m-modified">4</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label" style="color: var(--color-reject);">Escalated / Blocked</div>
+          <div class="metric-value" style="color: var(--color-reject);" id="m-blocked">4</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label" style="color: var(--accent-indigo);">Active Policies</div>
+          <div class="metric-value" style="color: var(--accent-indigo);" id="m-active-policies">6</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label" style="color: #a5b4fc;">Active Agents</div>
+          <div class="metric-value" style="color: #a5b4fc;" id="m-active-agents">7</div>
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1.25rem;">
+        <div class="panel">
+          <div class="panel-title">Governance Control Plane Telemetry</div>
+          <p style="font-size:0.83rem; color: var(--text-secondary); margin-bottom: 1rem;">
+            Pre-execution multi-agent control plane monitoring AI tool requests across internal datasets and public endpoints.
+          </p>
+          <div class="risk-factors">
+            <div class="factor-item">Average Evaluation Latency: <strong>8.2ms</strong></div>
+            <div class="factor-item">Policy Grounding Rate: <strong>100%</strong></div>
+            <div class="factor-item">Human Escalation Rate: <strong>28.5%</strong></div>
+            <div class="factor-item">Autonomous Remediation Rate: <strong>28.5%</strong></div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title">Enterprise Security & Architecture Posture</div>
+          <p style="font-size:0.83rem; color: var(--text-secondary); margin-bottom: 1rem;">
+            Real-time enforcement status of core governance agents and AI reasoning components.
+          </p>
+          <div class="risk-factors">
+            <div class="factor-item">Control Plane Status: <strong style="color:var(--color-approve);">ENFORCING</strong></div>
+            <div class="factor-item">Policy Knowledge Engine: <strong style="color:var(--accent-indigo);">SQLite + RAG</strong></div>
+            <div class="factor-item">AI Reasoning Engine: <strong style="color:var(--accent-indigo);">IBM Granite 7B</strong></div>
+            <div class="factor-item">Change Intelligence: <strong style="color:var(--color-approve);">AUTONOMOUS</strong></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: GOVERNANCE CONTROL PLANE (MAIN DASHBOARD) -->
+    <div id="tab-control-plane" class="tab-content active">
+
+      <!-- Visual End-to-End Governance Pipeline Sequence Strip -->
+      <div class="pipeline-flow-strip">
+        <div class="flow-node active">1. REQUEST</div> <span class="flow-arrow">➔</span>
+        <div class="flow-node active">2. INTENT</div> <span class="flow-arrow">➔</span>
+        <div class="flow-node active">3. IDENTITY</div> <span class="flow-arrow">➔</span>
+        <div class="flow-node active">4. RAG RETRIEVAL</div> <span class="flow-arrow">➔</span>
+        <div class="flow-node active" style="border-color:var(--accent-indigo); color:#a5b4fc;">5. IBM GRANITE REASONING</div> <span class="flow-arrow">➔</span>
+        <div class="flow-node active">6. COMPLIANCE</div> <span class="flow-arrow">➔</span>
+        <div class="flow-node active">7. RISK ANALYSIS</div> <span class="flow-arrow">➔</span>
+        <div class="flow-node active">8. TRANSFORMATION</div> <span class="flow-arrow">➔</span>
+        <div class="flow-node active" style="border-color:var(--color-approve); color:var(--color-approve);">9. FINAL DECISION</div> <span class="flow-arrow">➔</span>
+        <div class="flow-node active">10. AUDIT TRAIL</div>
+      </div>
+
+      <div class="grid-container">
+        
+        <!-- Left Column: Intake Panel & Scenario Lab -->
+        <div>
+          <div class="panel">
+            <div class="panel-title">Scenario Lab Presets</div>
+            <div class="presets-group">
+              <button class="preset-btn" onclick="loadScenario(1)">
+                <span>1. Safe Analytics Export</span>
+                <span class="badge badge-approve">APPROVE</span>
+              </button>
+              <button class="preset-btn" onclick="loadScenario(2)">
+                <span>2. Customer PII Records</span>
+                <span class="badge badge-modify">MODIFY</span>
+              </button>
+              <button class="preset-btn" onclick="loadScenario(3)">
+                <span>3. New External Vendor</span>
+                <span class="badge badge-escalate">ESCALATE</span>
+              </button>
+              <button class="preset-btn" onclick="loadScenario(4)">
+                <span>4. Unauthorized Public Export</span>
+                <span class="badge badge-reject">REJECT</span>
+              </button>
+            </div>
+
+            <div class="panel-title" style="margin-top: 1.5rem;">Action Intake Form</div>
+            <form id="govern-form" onsubmit="handleGovern(event)">
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Requester User ID</label>
+                  <input type="text" id="user_id" value="U001" oninput="updateLiveSignals()" required>
+                </div>
+                <div class="form-group">
+                  <label>Enterprise Role</label>
+                  <input type="text" id="role" value="Senior Data Analyst" oninput="updateLiveSignals()" required>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label>Proposed AI Action</label>
+                <textarea id="action" rows="2" oninput="updateLiveSignals()" required>Export anonymized aggregated customer analytics</textarea>
+              </div>
+
+              <div class="form-group">
+                <label>Target System / Endpoint</label>
+                <input type="text" id="target" value="approved-internal-analytics" oninput="updateLiveSignals()" required>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Data Classification</label>
+                  <select id="data_classification" onchange="updateLiveSignals()">
+                    <option value="Public">Public</option>
+                    <option value="Internal" selected>Internal</option>
+                    <option value="Confidential">Confidential</option>
+                    <option value="Restricted">Restricted</option>
+                    <option value="PII / Sensitive">PII / Sensitive</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>Authorization Status</label>
+                  <select id="authorization_status" onchange="updateLiveSignals()">
+                    <option value="Verified" selected>Verified</option>
+                    <option value="Not Verified">Not Verified</option>
+                    <option value="Pending">Pending</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label>Business Purpose</label>
+                <input type="text" id="business_purpose" value="Internal executive reporting and analytics" oninput="updateLiveSignals()">
+              </div>
+
+              <!-- Live Governance Signals Strip -->
+              <div id="live-signals-panel" style="margin-top: 0.75rem; padding: 0.75rem; background: rgba(9, 13, 22, 0.6); border: 1px solid var(--border-color); border-radius: 8px;">
+                <div style="font-size:0.7rem; font-weight:700; color:var(--accent-indigo); text-transform:uppercase; margin-bottom:0.4rem; display:flex; justify-content:space-between; align-items:center;">
+                  <span>📡 Live Governance Signals</span>
+                  <span id="unsaved-badge" style="display:none; color:var(--color-modify); font-size:0.65rem;">● Inputs changed (Click Evaluate)</span>
+                </div>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:0.35rem; font-size:0.7rem;">
+                  <div>Data Sensitivity: <strong id="sig-data-sens" style="color:var(--text-primary);">INTERNAL (20)</strong></div>
+                  <div>Authorization: <strong id="sig-auth-status" style="color:var(--color-approve);">VERIFIED (0)</strong></div>
+                  <div>Requester Clearance: <strong id="sig-role-clearance" style="color:var(--text-primary);">MEDIUM-HIGH</strong></div>
+                  <div>Target Trust: <strong id="sig-target-trust" style="color:var(--color-approve);">HIGH (TRUSTED)</strong></div>
+                  <div>Purpose Alignment: <strong id="sig-purpose-align" style="color:var(--color-approve);">HIGH</strong></div>
+                  <div>External Exposure: <strong id="sig-ext-exposure" style="color:var(--color-approve);">LOW (INTERNAL)</strong></div>
+                </div>
+              </div>
+
+              <button type="submit" class="btn-submit" id="btn-submit">Evaluate Governance Action</button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Right Column: Control Plane Results -->
+        <div>
+          <!-- REMEDIATION APPLIED CONTAINER (Rendered after simulateRemediation) -->
+          <div id="remediation-applied-container" style="display: none;"></div>
+
+          <!-- Decision Banner -->
+          <div id="decision-panel" class="decision-banner badge-approve">
+            <div>
+              <div class="decision-title" id="decision-text">✓ ACTION APPROVED</div>
+              <div class="decision-desc" id="decision-desc">Governance checks passed. The action is authorized for execution.</div>
+            </div>
+            <!-- Workflow Action Controls Container (Strictly 1 button per outcome) -->
+            <div id="decision-action-controls">
+              <!-- Rendered dynamically -->
+            </div>
+          </div>
+
+          <!-- Live Agent Execution Pipeline -->
+          <div class="panel">
+            <div class="panel-title">
+              <span>Live Multi-Agent Pipeline (Click Agent for Details)</span>
+              <span style="font-size:0.7rem; color:var(--accent-indigo);">7 AGENTS ACTIVE</span>
+            </div>
+            <div class="pipeline-grid" id="pipeline-grid">
+              <div class="agent-card completed" onclick="openAgentModal('planner')">
+                <div class="agent-name">Planner</div>
+                <div class="agent-status">Completed (1ms)</div>
+              </div>
+              <div class="agent-card completed" onclick="openAgentModal('intent')">
+                <div class="agent-name">Intent</div>
+                <div class="agent-status">Completed (1ms)</div>
+              </div>
+              <div class="agent-card completed" onclick="openAgentModal('identity')">
+                <div class="agent-name">Identity</div>
+                <div class="agent-status">Completed (1ms)</div>
+              </div>
+              <div class="agent-card completed" onclick="openAgentModal('policy_retrieval')">
+                <div class="agent-name">RAG</div>
+                <div class="agent-status">Completed (4ms)</div>
+              </div>
+              <div class="agent-card completed" onclick="openAgentModal('compliance')">
+                <div class="agent-name">Compliance</div>
+                <div class="agent-status">Completed (1ms)</div>
+              </div>
+              <div class="agent-card completed" onclick="openAgentModal('risk')">
+                <div class="agent-name">Risk</div>
+                <div class="agent-status">Completed (1ms)</div>
+              </div>
+              <div class="agent-card completed" onclick="openAgentModal('reviewer')">
+                <div class="agent-name">Reviewer</div>
+                <div class="agent-status">Completed (1ms)</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Risk Score & 3-Stage Dynamic Breakdown -->
+          <div class="panel">
+            <div class="panel-title">
+              <span>3-STAGE POLICY-AWARE RISK MODEL</span>
+              <span style="font-size:0.7rem; color:var(--text-secondary);" id="confidence-label">Confidence: 91%</span>
+            </div>
+
+            <!-- 3-Stage Risk Summary Metric Cards -->
+            <div style="display:grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap:0.75rem; margin-bottom:1rem; background:rgba(255,255,255,0.02); padding:0.8rem; border-radius:8px; border:1px solid rgba(255,255,255,0.06);">
+              <div style="text-align:center;">
+                <div style="font-size:0.65rem; color:var(--text-muted); font-weight:600; text-transform:uppercase;">Inherent Risk</div>
+                <div style="font-size:1.3rem; font-weight:700; color:var(--color-modify);" id="card-inh-score">75</div>
+                <div style="font-size:0.6rem; color:var(--text-secondary);" id="card-inh-level">HIGH</div>
+              </div>
+              <div style="text-align:center; border-left:1px solid rgba(255,255,255,0.06);">
+                <div style="font-size:0.65rem; color:var(--text-muted); font-weight:600; text-transform:uppercase;">Risk Reduction</div>
+                <div style="font-size:1.3rem; font-weight:700; color:var(--color-approve);" id="card-reduction-score">-55</div>
+                <div style="font-size:0.6rem; color:var(--text-secondary);">Controls & Mitigations</div>
+              </div>
+              <div style="text-align:center; border-left:1px solid rgba(255,255,255,0.06);">
+                <div style="font-size:0.65rem; color:var(--text-muted); font-weight:600; text-transform:uppercase;">Effective Risk</div>
+                <div style="font-size:1.3rem; font-weight:700; color:var(--color-approve);" id="card-eff-score">20</div>
+                <div style="font-size:0.65rem; font-weight:600; color:var(--color-approve);" id="card-eff-level">LOW</div>
+              </div>
+              <div style="text-align:center; border-left:1px solid rgba(255,255,255,0.06);">
+                <div style="font-size:0.65rem; color:var(--text-muted); font-weight:600; text-transform:uppercase;">Decision Source</div>
+                <div style="font-size:0.85rem; font-weight:700; color:var(--accent-indigo); margin-top:0.25rem;" id="card-decision-source">Policy Rule</div>
+              </div>
+            </div>
+
+            <div class="risk-meter-container">
+              <div class="score-circle" id="score-circle" style="border-color: var(--color-approve);">
+                <span class="score-num" id="score-num" style="color: var(--color-approve);">20</span>
+                <span style="font-size: 0.6rem; color: var(--text-muted);">EFFECTIVE</span>
+              </div>
+              <div class="risk-factors" id="risk-factors">
+                <!-- Dynamically populated risk & mitigating factors -->
+              </div>
+            </div>
+
+            <p style="font-size:0.72rem; color:var(--text-muted); margin-top:0.5rem; line-height:1.4;">
+              * <strong>Policy Precedence Notice:</strong> Explicit database policies override default threshold scores. Inherent risk evaluates data sensitivity before mitigations, while Effective risk determines final decision alignment.
+            </p>
+
+            <!-- Structured Decision Rationale -->
+            <div class="panel-title" style="margin-top:1rem; font-size:0.75rem;">Decision Rationale</div>
+            <div class="rationale-list" id="rationale-list">
+              <!-- Dynamically populated 7-step rationale -->
+            </div>
+
+            <!-- Transformation Diff View (For MODIFY ONLY) -->
+            <div id="transformation-container" style="display: none; margin-top: 1rem;">
+              <div class="panel-title" style="color: var(--color-modify);">Action Transformation</div>
+              <div class="diff-box">
+                <div class="diff-del" id="orig-action">- Original: Export customer records containing email and phone numbers</div>
+                <div class="diff-add" id="trans-action">+ Transformed: Remove/anonymize PII fields (email, phone) from export</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Control Plane Action Simulation -->
+          <div class="panel">
+            <div class="panel-title">Action Interception Simulation</div>
+            <div class="sim-box">
+              <div class="sim-flow">
+                <div class="sim-node">Source: Database</div>
+                <div style="color:var(--text-muted);">➔</div>
+                <div class="sim-node" id="sim-data-node">Data: Internal</div>
+                <div style="color:var(--text-muted);">➔</div>
+                <div class="sim-node" id="sim-target-node">Target: approved-internal</div>
+              </div>
+              <div class="sim-steps">
+                <div class="sim-step" style="color:var(--color-approve);">✓ Action intercepted by AegisMesh control plane</div>
+                <div class="sim-step" style="color:var(--color-approve);">✓ Requester identity & clearance verified</div>
+                <div class="sim-step" style="color:var(--color-approve);">✓ Enterprise policy grounding retrieved</div>
+                <div class="sim-step" id="sim-final-step" style="color:var(--color-approve);">✓ Action execution ALLOWED</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- RAG Policy Evidence Panel -->
+          <div class="panel">
+            <div class="panel-title">
+              <span>Retrieved Policy Evidence (RAG Grounding)</span>
+              <span style="font-size:0.7rem; color:var(--text-muted);">Grounded in Enterprise Data</span>
+            </div>
+            <div id="evidence-list">
+              <!-- Evidence items populated dynamically -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: POLICIES (POLICY-AS-CODE) -->
+    <div id="tab-policies" class="tab-content">
+      <div class="panel">
+        <div class="panel-title">
+          <span>Enterprise Policy Knowledge Base (Policy-as-Code)</span>
+          <button class="btn btn-approve" style="width:auto; padding:0.4rem 0.8rem; font-size:0.75rem;" onclick="openCreatePolicyModal()">+ Create Policy</button>
+        </div>
+        <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:1.25rem;">
+          Living enterprise policies stored in SQLite database and evaluated dynamically by RAG & governance agents. Editing an active policy automatically increments its version and triggers Policy Evolution Change Intelligence.
+        </p>
+
+        <div id="policies-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+          <!-- Dynamically populated via API -->
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 4: AUDIT TRAIL -->
+    <div id="tab-audit" class="tab-content">
+      <div class="panel">
+        <div class="panel-title">
+          <span>Governance Audit Trail History</span>
+          <input type="text" id="audit-search-input" placeholder="🔍 Search by Request ID, User, or Action..." style="width:280px; padding:0.35rem 0.7rem; font-size:0.75rem;" oninput="filterAuditTrail()">
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Timestamp</th>
+              <th>Request ID</th>
+              <th>User</th>
+              <th>Role</th>
+              <th>Action</th>
+              <th>Target</th>
+              <th>Decision</th>
+              <th>Risk</th>
+            </tr>
+          </thead>
+          <tbody id="audit-table-body">
+            <!-- Populated via API -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAB 5: AGENTS MATRIX -->
+    <div id="tab-agents" class="tab-content">
+      <div class="panel">
+        <div class="panel-title">Governance Multi-Agent Architecture</div>
+        <p style="font-size:0.83rem; color:var(--text-secondary); margin-bottom:1.25rem;">
+          AegisMesh AI orchestrates 7 specialized agents. IBM Granite 7B serves as the underlying natural language reasoning engine.
+        </p>
+        <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:1rem;">
+          <div class="agent-card completed" onclick="openAgentModal('planner')">
+            <div class="agent-name">1. Planner Agent</div>
+            <p style="font-size:0.75rem; color:var(--text-secondary); margin-top:0.3rem;">Decomposes proposed AI actions into required execution validation checks.</p>
+          </div>
+          <div class="agent-card completed" onclick="openAgentModal('intent')">
+            <div class="agent-name">2. Intent Agent</div>
+            <p style="font-size:0.75rem; color:var(--text-secondary); margin-top:0.3rem;">Classifies underlying action intent, data sensitivity, and external exposure.</p>
+          </div>
+          <div class="agent-card completed" onclick="openAgentModal('identity')">
+            <div class="agent-name">3. Identity Agent</div>
+            <p style="font-size:0.75rem; color:var(--text-secondary); margin-top:0.3rem;">Validates user role, department clearance, and permissions matrix.</p>
+          </div>
+          <div class="agent-card completed" onclick="openAgentModal('policy_retrieval')">
+            <div class="agent-name">4. RAG Policy Agent</div>
+            <p style="font-size:0.75rem; color:var(--text-secondary); margin-top:0.3rem;">Retrieves policy evidence & clauses from enterprise policy knowledge base.</p>
+          </div>
+          <div class="agent-card completed" onclick="openAgentModal('compliance')">
+            <div class="agent-name">5. Compliance Agent</div>
+            <p style="font-size:0.75rem; color:var(--text-secondary); margin-top:0.3rem;">Evaluates action against retrieved policies to detect specific violations.</p>
+          </div>
+          <div class="agent-card completed" onclick="openAgentModal('risk')">
+            <div class="agent-name">6. Risk Agent</div>
+            <p style="font-size:0.75rem; color:var(--text-secondary); margin-top:0.3rem;">Calculates weighted 0-100 risk score based on 8 core risk factors.</p>
+          </div>
+          <div class="agent-card completed" onclick="openAgentModal('reviewer')">
+            <div class="agent-name">7. Reviewer Agent</div>
+            <p style="font-size:0.75rem; color:var(--text-secondary); margin-top:0.3rem;">Validates decision consistency and triggers human escalation if required.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 6: POLICY EVOLUTION INTELLIGENCE -->
+    <div id="tab-policy-evolution" class="tab-content">
+      <!-- Policy Evolution Positioning Hero Banner -->
+      <div class="hero-story-card" style="border-color: rgba(16, 185, 129, 0.4);">
+        <div class="hero-title" style="color: var(--color-approve);">
+          <span>🧬 Autonomous Policy Evolution & Change Intelligence</span>
+          <span class="badge badge-approve" style="font-size:0.68rem;">NOVELTY LAYER ACTIVE</span>
+        </div>
+        <div class="hero-desc">
+          Traditional governance systems require humans to manually interpret policy changes. AegisMesh autonomously detects policy modifications, analyzes semantic and governance impact, replays affected historical actions, detects policy conflicts, and determines whether automatic enforcement or elevated human review is required.
+        </div>
+      </div>
+
+      <!-- 7-Step Policy Evolution Visual Lifecycle Flow -->
+      <div class="pipeline-flow-strip" style="margin-bottom: 1.5rem; background: rgba(15, 23, 42, 0.9);">
+        <div class="flow-node active">1. POLICY CHANGED</div> <span class="flow-arrow">➔</span>
+        <div class="flow-node active">2. CHANGE DETECTED</div> <span class="flow-arrow">➔</span>
+        <div class="flow-node active" style="border-color:var(--accent-indigo); color:#a5b4fc;">3. AI IMPACT ANALYSIS</div> <span class="flow-arrow">➔</span>
+        <div class="flow-node active">4. ACTION REPLAY</div> <span class="flow-arrow">➔</span>
+        <div class="flow-node active" style="border-color:var(--color-modify); color:var(--color-modify);">5. CONFLICT CHECK</div> <span class="flow-arrow">➔</span>
+        <div class="flow-node active" style="border-color:var(--color-approve); color:var(--color-approve);">6. AUTO-ENFORCE / REVIEW</div> <span class="flow-arrow">➔</span>
+        <div class="flow-node active">7. AUDIT RECORD</div>
+      </div>
+
+      <!-- Top KPI Summary Cards -->
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-label" style="color:var(--accent-indigo);">Active Enterprise Policies</div>
+          <div class="metric-value" style="color:var(--accent-indigo);" id="evo-kpi-active">6</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label" style="color:var(--color-modify);">Policy Changes Detected</div>
+          <div class="metric-value" style="color:var(--color-modify);" id="evo-kpi-changes">0</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label" style="color:var(--color-escalate);">Requires Human Review</div>
+          <div class="metric-value" style="color:var(--color-escalate);" id="evo-kpi-review">0</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label" style="color:var(--color-reject);">Critical Regressions</div>
+          <div class="metric-value" style="color:var(--color-reject);" id="evo-kpi-regressions">0</div>
+        </div>
+      </div>
+
+      <!-- Main Policy Evolution Grid -->
+      <div style="display:grid; grid-template-columns: 1fr 360px; gap:1.5rem;">
+        
+        <!-- Left: Autonomous Policy Evolution Timeline -->
+        <div class="panel">
+          <div class="panel-title">
+            <span>Autonomous Change Intelligence Timeline</span>
+            <button class="btn btn-secondary" style="font-size:0.75rem; padding:0.3rem 0.75rem;" onclick="loadPolicyEvolutionData()">🔄 Refresh Timeline</button>
+          </div>
+          <p style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:1rem;">
+            AegisMesh autonomously analyzes policy modifications, predicts governance impact, replays historical actions, and enforces human approval for material changes.
+          </p>
+
+          <div id="evolution-timeline" style="display:flex; flex-direction:column; gap:0.85rem;">
+            <!-- Dynamically populated change events timeline -->
+          </div>
+        </div>
+
+        <!-- Right: Active Policy Overlaps & Conflict Detection -->
+        <div>
+          <div class="panel">
+            <div class="panel-title" style="color:var(--color-escalate);">
+              <span>Policy Overlap & Conflict Detection</span>
+              <span class="badge badge-escalate" id="conflict-count-badge">0 CONFLICTS</span>
+            </div>
+            <p style="font-size:0.75rem; color:var(--text-secondary); margin-bottom:0.75rem;">
+              Scans active enterprise policies for overlapping condition targets with conflicting decision outcomes.
+            </p>
+            <div id="conflicts-list" style="display:flex; flex-direction:column; gap:0.6rem;">
+              <!-- Dynamically populated conflicts -->
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- Human Review Modal -->
+  <div class="modal-overlay" id="human-modal" style="display: none;">
+    <div class="modal">
+      <h3 style="color: var(--color-escalate); margin-bottom: 0.5rem;">Human Review Required</h3>
+      <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.75rem;">
+        This action requires elevated human authority (CISO / Security Manager / Data Protection Officer).
+      </p>
+
+      <div class="diff-box" style="margin-bottom:1rem; font-size:0.75rem;">
+        <div><strong>Case ID:</strong> <span id="modal-case-id">GOV-8942</span></div>
+        <div><strong>Requester:</strong> <span id="modal-requester">U003 (Marketing Analyst)</span></div>
+        <div><strong>Action:</strong> <span id="modal-action">Send sensitive customer dataset to a new external analytics vendor</span></div>
+        <div><strong>Target:</strong> <span id="modal-target">new-external-vendor</span></div>
+        <div><strong>Inherent Risk Score:</strong> <span style="color:var(--color-escalate); font-weight:700;" id="modal-risk-score">36 / MEDIUM</span></div>
+      </div>
+
+      <div class="form-group">
+        <label>Reviewer Justification Comments</label>
+        <textarea id="reviewer-comments" rows="3" placeholder="Enter review justification (e.g. Approved temporary vendor testing exception)..."></textarea>
+      </div>
+      <div class="btn-group">
+        <button class="btn btn-approve" onclick="submitReview('approve')">APPROVE (Authorize Action)</button>
+        <button class="btn btn-reject" onclick="submitReview('reject')">REJECT (Block Action)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Agent Detail Modal -->
+  <div class="modal-overlay" id="agent-modal" style="display: none;">
+    <div class="modal">
+      <h3 id="agent-modal-title" style="color: var(--accent-indigo); margin-bottom: 0.5rem;">Agent Details</h3>
+      <div id="agent-modal-body" style="font-size:0.85rem; color:var(--text-secondary);">
+        <!-- Populated via JS -->
+      </div>
+      <div class="btn-group">
+        <button class="btn btn-secondary" onclick="closeAgentModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Policy Source Modal -->
+  <div class="modal-overlay" id="policy-modal" style="display: none;">
+    <div class="modal" style="width: 700px;">
+      <h3 id="policy-modal-title" style="color: var(--accent-indigo); margin-bottom: 0.5rem;">Policy Document</h3>
+      <div id="policy-modal-body" class="diff-box" style="font-size:0.8rem; max-height: 500px; overflow-y: auto;">
+        <!-- Populated via JS -->
+      </div>
+      <div class="btn-group">
+        <button class="btn btn-secondary" onclick="closePolicyModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Create Policy Modal -->
+  <div class="modal-overlay" id="create-policy-modal" style="display: none;">
+    <div class="modal" style="width: 600px;">
+      <h3 style="color: var(--accent-indigo); margin-bottom: 0.5rem;">Create New Policy</h3>
+      <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.75rem;">
+        Add an enterprise policy rule. Active policies are immediately evaluated by RAG & governance agents.
+      </p>
+
+      <div class="form-group">
+        <label>Policy ID (Unique)</label>
+        <input type="text" id="new-policy-id" placeholder="POL-CUSTOM-001" required>
+      </div>
+      <div class="form-group">
+        <label>Policy Name</label>
+        <input type="text" id="new-policy-name" placeholder="Custom Access Control Policy" required>
+      </div>
+      <div class="form-group">
+        <label>Description</label>
+        <input type="text" id="new-policy-desc" placeholder="Detailed objective of this policy">
+      </div>
+      <div class="form-group">
+        <label>Rule Definition & Criteria</label>
+        <textarea id="new-policy-rule" rows="3" placeholder="Actionable criteria or rule excerpt evaluated by RAG & Governance..." required></textarea>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:0.5rem;">
+        <div class="form-group">
+          <label>Decision Action</label>
+          <select id="new-policy-action">
+            <option value="APPROVE">APPROVE</option>
+            <option value="MODIFY">MODIFY</option>
+            <option value="ESCALATE">ESCALATE</option>
+            <option value="REJECT">REJECT</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Priority</label>
+          <select id="new-policy-priority">
+            <option value="LOW">LOW</option>
+            <option value="MEDIUM" selected>MEDIUM</option>
+            <option value="HIGH">HIGH</option>
+            <option value="CRITICAL">CRITICAL</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Initial Status</label>
+          <select id="new-policy-status">
+            <option value="ACTIVE" selected>ACTIVE</option>
+            <option value="INACTIVE">INACTIVE</option>
+            <option value="DRAFT">DRAFT</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="btn-group">
+        <button class="btn btn-secondary" onclick="closeCreatePolicyModal()">Cancel</button>
+        <button class="btn btn-approve" id="btn-submit-create-policy" onclick="submitCreatePolicy()">Create Policy</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Policy Modal -->
+  <div class="modal-overlay" id="edit-policy-modal" style="display: none;">
+    <div class="modal" style="width: 600px;">
+      <h3 style="color: var(--accent-indigo); margin-bottom: 0.5rem;">Edit Enterprise Policy</h3>
+      <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.75rem;">
+        Update policy criteria. Updating an active policy increments its version and updates live governance evaluation.
+      </p>
+
+      <div class="form-group">
+        <label>Policy ID (Read-only)</label>
+        <input type="text" id="edit-policy-id" readonly style="opacity:0.7; cursor:not-allowed;">
+      </div>
+      <div class="form-group">
+        <label>Policy Name</label>
+        <input type="text" id="edit-policy-name" required>
+      </div>
+      <div class="form-group">
+        <label>Description</label>
+        <input type="text" id="edit-policy-desc">
+      </div>
+      <div class="form-group">
+        <label>Rule Definition & Criteria</label>
+        <textarea id="edit-policy-rule" rows="3" required></textarea>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:0.5rem;">
+        <div class="form-group">
+          <label>Decision Action</label>
+          <select id="edit-policy-action">
+            <option value="APPROVE">APPROVE</option>
+            <option value="MODIFY">MODIFY</option>
+            <option value="ESCALATE">ESCALATE</option>
+            <option value="REJECT">REJECT</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Priority</label>
+          <select id="edit-policy-priority">
+            <option value="LOW">LOW</option>
+            <option value="MEDIUM">MEDIUM</option>
+            <option value="HIGH">HIGH</option>
+            <option value="CRITICAL">CRITICAL</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Status</label>
+          <select id="edit-policy-status">
+            <option value="ACTIVE">ACTIVE</option>
+            <option value="INACTIVE">INACTIVE</option>
+            <option value="DRAFT">DRAFT</option>
+          </select>
+        </div>
+      </div>
+      <p id="edit-policy-version-notice" style="font-size:0.75rem; color:var(--text-muted); margin-bottom:0.75rem;"></p>
+
+      <div class="btn-group">
+        <button class="btn btn-secondary" onclick="closeEditPolicyModal()">Cancel</button>
+        <button class="btn btn-approve" id="btn-submit-edit-policy" onclick="submitEditPolicy()">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Detailed Policy Change Intelligence Report Modal -->
+  <div class="modal-overlay" id="evolution-modal" style="display: none;">
+    <div class="modal" style="width: 840px; max-width: 95vw;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
+        <h3 style="color: var(--accent-indigo); margin:0;" id="modal-evo-title">Policy Change Intelligence Report</h3>
+        <span class="badge badge-approve" id="modal-evo-status-badge">AUTO_ENFORCED</span>
+      </div>
+      <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 1rem;" id="modal-evo-subtitle">
+        Autonomous change detection, impact scoring, historical simulation, and conflict analysis.
+      </p>
+
+      <!-- KPI Grid inside Modal -->
+      <div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:0.5rem; background:rgba(255,255,255,0.03); padding:0.75rem; border-radius:8px; border:1px solid rgba(255,255,255,0.08); margin-bottom:1rem; text-align:center;">
+        <div>
+          <div style="font-size:0.65rem; color:var(--text-muted);">CHANGE TYPE</div>
+          <div style="font-size:0.85rem; font-weight:700; color:var(--accent-indigo);" id="modal-evo-type">SCOPE_EXPANSION</div>
+        </div>
+        <div>
+          <div style="font-size:0.65rem; color:var(--text-muted);">POLICY IMPACT SCORE</div>
+          <div style="font-size:1.1rem; font-weight:700; color:var(--color-modify);" id="modal-evo-score">82 / 100</div>
+        </div>
+        <div>
+          <div style="font-size:0.65rem; color:var(--text-muted);">IMPACT LEVEL</div>
+          <div style="font-size:0.85rem; font-weight:700; color:var(--color-escalate);" id="modal-evo-level">HIGH IMPACT</div>
+        </div>
+        <div>
+          <div style="font-size:0.65rem; color:var(--text-muted);">AFFECTED ACTIONS</div>
+          <div style="font-size:1.1rem; font-weight:700; color:var(--color-approve);" id="modal-evo-replays">11 Actions</div>
+        </div>
+      </div>
+
+      <!-- Before vs After Policy Diff -->
+      <div style="margin-bottom:1rem;">
+        <div style="font-size:0.75rem; font-weight:700; color:var(--text-secondary); margin-bottom:0.4rem;">BEFORE vs AFTER POLICY CONTENT</div>
+        <div class="diff-box">
+          <div class="diff-del" id="modal-evo-before">- Old Policy: ...</div>
+          <div class="diff-add" id="modal-evo-after">+ New Policy: ...</div>
+        </div>
+      </div>
+
+      <!-- Explainable Recommendation & Semantic Summary -->
+      <div style="background:rgba(255,255,255,0.02); padding:0.75rem; border-radius:8px; border:1px solid rgba(255,255,255,0.06); margin-bottom:1rem;">
+        <div style="font-size:0.75rem; font-weight:700; color:var(--accent-indigo); margin-bottom:0.25rem;">AegisMesh Autonomous Recommendation</div>
+        <div style="font-size:0.8rem; color:var(--text-primary);" id="modal-evo-recommendation">...</div>
+      </div>
+
+      <!-- Governance Simulation Table (Before vs After) -->
+      <div style="margin-bottom:1rem;">
+        <div style="font-size:0.75rem; font-weight:700; color:var(--text-secondary); margin-bottom:0.4rem;">BEFORE vs AFTER GOVERNANCE SIMULATION (HISTORICAL REPLAY)</div>
+        <div style="max-height:180px; overflow-y:auto; border:1px solid var(--border-color); border-radius:8px;">
+          <table style="width:100%; border-collapse:collapse; font-size:0.75rem;">
+            <thead>
+              <tr style="background:rgba(255,255,255,0.05); text-align:left;">
+                <th style="padding:0.4rem 0.6rem;">Action ID</th>
+                <th style="padding:0.4rem 0.6rem;">Historical Action</th>
+                <th style="padding:0.4rem 0.6rem;">Old Decision</th>
+                <th style="padding:0.4rem 0.6rem;">New Decision</th>
+                <th style="padding:0.4rem 0.6rem;">Replay Impact</th>
+              </tr>
+            </thead>
+            <tbody id="modal-evo-simulation-table">
+              <!-- Rendered via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Human Approval Controls -->
+      <div id="modal-evo-approval-controls" style="margin-top:1rem; border-top:1px solid var(--border-color); padding-top:0.75rem;">
+        <!-- Rendered via JS -->
+      </div>
+
+      <div class="btn-group">
+        <button class="btn btn-secondary" onclick="closeEvolutionModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const scenarios = {
+      1: { user_id: 'U001', role: 'Senior Data Analyst', action: 'Export anonymized aggregated customer analytics', target: 'approved-internal-analytics', data_classification: 'Internal', business_purpose: 'Internal executive reporting and analytics', authorization_status: 'Verified' },
+      2: { user_id: 'U002', role: 'Marketing Analyst', action: 'Export customer records containing email and phone numbers', target: 'approved-analytics-service', data_classification: 'PII / Sensitive', business_purpose: 'Marketing campaign email outreach', authorization_status: 'Verified' },
+      3: { user_id: 'U003', role: 'Marketing Analyst', action: 'Send sensitive customer dataset to a new external analytics vendor', target: 'new-external-vendor', data_classification: 'Restricted', business_purpose: 'External vendor analytics testing', authorization_status: 'Pending' },
+      4: { user_id: 'U004', role: 'Junior Analyst', action: 'Export confidential customer database to unauthorized public endpoint', target: 'public-endpoint-unauthorized', data_classification: 'Confidential', business_purpose: 'Public data dump testing', authorization_status: 'Not Verified' }
+    };
+
+    // State management variables
+    let currentRequest = null;
+    let currentEvaluationData = null;
+    let currentRequestId = '';
+    let remediationHistory = null;
+
+    function updateLiveSignals() {
+      const cls = document.getElementById('data_classification').value;
+      const auth = document.getElementById('authorization_status').value;
+      const role = document.getElementById('role').value;
+      const target = document.getElementById('target').value;
+      const purpose = document.getElementById('business_purpose').value;
+      const action = document.getElementById('action').value;
+
+      document.getElementById('unsaved-badge').style.display = 'inline';
+
+      // 1. Data Sensitivity
+      const sigData = document.getElementById('sig-data-sens');
+      if (cls === 'Public') { sigData.innerText = 'PUBLIC (5)'; sigData.style.color = 'var(--color-approve)'; }
+      else if (cls === 'Internal') { sigData.innerText = 'INTERNAL (20)'; sigData.style.color = 'var(--text-primary)'; }
+      else if (cls === 'Confidential') { sigData.innerText = 'CONFIDENTIAL (55)'; sigData.style.color = 'var(--color-modify)'; }
+      else if (cls === 'Restricted') { sigData.innerText = 'RESTRICTED (85)'; sigData.style.color = 'var(--color-escalate)'; }
+      else { sigData.innerText = 'PII / SENSITIVE (90)'; sigData.style.color = 'var(--color-reject)'; }
+
+      // 2. Authorization Status
+      const sigAuth = document.getElementById('sig-auth-status');
+      if (auth === 'Verified') { sigAuth.innerText = 'VERIFIED (0)'; sigAuth.style.color = 'var(--color-approve)'; }
+      else if (auth === 'Pending') { sigAuth.innerText = 'PENDING (35)'; sigAuth.style.color = 'var(--color-modify)'; }
+      else { sigAuth.innerText = 'NOT VERIFIED (80)'; sigAuth.style.color = 'var(--color-reject)'; }
+
+      // 3. Requester Clearance
+      const sigRole = document.getElementById('sig-role-clearance');
+      const rLower = role.toLowerCase();
+      if (rLower.includes('ciso') || rLower.includes('security')) { sigRole.innerText = 'HIGHEST (CLEAR)'; sigRole.style.color = 'var(--color-approve)'; }
+      else if (rLower.includes('senior') || rLower.includes('manager')) { sigRole.innerText = 'MEDIUM-HIGH'; sigRole.style.color = 'var(--color-approve)'; }
+      else if (rLower.includes('junior') || rLower.includes('contractor')) { sigRole.innerText = 'LOW (RESTRICTED)'; sigRole.style.color = 'var(--color-escalate)'; }
+      else { sigRole.innerText = 'MEDIUM'; sigRole.style.color = 'var(--text-primary)'; }
+
+      // 4. Target Trust
+      const sigTarget = document.getElementById('sig-target-trust');
+      const tLower = target.toLowerCase();
+      if (tLower.includes('public') || tLower.includes('unauthorized')) { sigTarget.innerText = 'UNTRUSTED (95)'; sigTarget.style.color = 'var(--color-reject)'; }
+      else if (tLower.includes('new') || tLower.includes('vendor')) { sigTarget.innerText = 'NEW VENDOR (65)'; sigTarget.style.color = 'var(--color-escalate)'; }
+      else if (tLower.includes('approved')) { sigTarget.innerText = 'APPROVED PROXY (30)'; sigTarget.style.color = 'var(--color-modify)'; }
+      else { sigTarget.innerText = 'HIGH (INTERNAL 5)'; sigTarget.style.color = 'var(--color-approve)'; }
+
+      // 5. Purpose Alignment
+      const sigPurpose = document.getElementById('sig-purpose-align');
+      const pLower = purpose.toLowerCase();
+      if (pLower.includes('dump') || pLower.includes('unauthorized')) { sigPurpose.innerText = 'LOW (SUSPICIOUS)'; sigPurpose.style.color = 'var(--color-reject)'; }
+      else { sigPurpose.innerText = 'HIGH (ALIGNED)'; sigPurpose.style.color = 'var(--color-approve)'; }
+
+      // 6. External Exposure
+      const sigExposure = document.getElementById('sig-ext-exposure');
+      if (tLower.includes('public') || tLower.includes('unauthorized')) { sigExposure.innerText = 'CRITICAL (95)'; sigExposure.style.color = 'var(--color-reject)'; }
+      else if (tLower.includes('new') || tLower.includes('external')) { sigExposure.innerText = 'HIGH (70)'; sigExposure.style.color = 'var(--color-escalate)'; }
+      else { sigExposure.innerText = 'LOW (INTERNAL 5)'; sigExposure.style.color = 'var(--color-approve)'; }
+    }
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      
+      const targetBtn = Array.from(document.querySelectorAll('.nav-tab')).find(b => {
+        const onclickAttr = b.getAttribute('onclick') || '';
+        return onclickAttr.includes(`'${tabId}'`) || b.innerText.toLowerCase().includes(tabId.replace('-', ' '));
+      });
+      if (targetBtn) targetBtn.classList.add('active');
+      const targetContent = document.getElementById('tab-' + tabId);
+      if (targetContent) targetContent.classList.add('active');
+
+      if (tabId === 'audit') fetchAuditHistory();
+      if (tabId === 'policies') fetchPolicies();
+      if (tabId === 'policy-evolution') loadPolicyEvolutionData();
+    }
+
+    // --- Policy Management Functions ---
+    async function fetchPolicies() {
+      const container = document.getElementById('policies-grid');
+      if (!container) return;
+
+      try {
+        const res = await fetch('/api/policies');
+        const data = await res.json();
+        const policies = data.policies || [];
+
+        const actCountElem = document.getElementById('m-active-policies');
+        if (actCountElem) actCountElem.innerText = policies.filter(p => p.status === 'ACTIVE').length;
+
+        if (policies.length === 0) {
+          container.innerHTML = `
+            <div style="grid-column: 1 / -1; text-align: center; padding: 2rem; color: var(--text-secondary);">
+              No policies found in database. Click "+ Create Policy" to add one.
+            </div>`;
+          return;
+        }
+
+        container.innerHTML = policies.map(p => {
+          const statusBadge = p.status === 'ACTIVE' ? '<span class="badge badge-approve">ACTIVE</span>' :
+                              p.status === 'INACTIVE' ? '<span class="badge badge-reject">INACTIVE</span>' :
+                              '<span class="badge badge-modify">DRAFT</span>';
+
+          const actionBadge = p.decision_action === 'APPROVE' ? '<span class="badge badge-approve">APPROVE</span>' :
+                              p.decision_action === 'MODIFY' ? '<span class="badge badge-modify">MODIFY</span>' :
+                              p.decision_action === 'ESCALATE' ? '<span class="badge badge-escalate">ESCALATE</span>' :
+                              '<span class="badge badge-reject">REJECT</span>';
+
+          const priorityColor = p.priority === 'CRITICAL' ? 'var(--color-reject)' :
+                                p.priority === 'HIGH' ? 'var(--color-escalate)' :
+                                p.priority === 'MEDIUM' ? 'var(--color-modify)' :
+                                'var(--color-approve)';
+
+          return `
+          <div class="evidence-item" style="border-left: 3px solid ${priorityColor};">
+            <div class="evidence-header">
+              <span><strong>${p.name}</strong> (${p.policy_id})</span>
+              <div style="display:flex; gap:0.3rem;">
+                <span style="font-size:0.65rem; padding:0.15rem 0.4rem; border-radius:3px; background:rgba(255,255,255,0.05); color:var(--text-muted);">v${p.version}</span>
+                ${actionBadge}
+                ${statusBadge}
+              </div>
+            </div>
+            <p style="margin-bottom:0.5rem; font-size:0.8rem; color:var(--text-secondary);">${p.description || 'No description provided.'}</p>
+            <div class="diff-box" style="margin-top:0.4rem; font-size:0.75rem; white-space:pre-wrap;">
+              <strong>Rule Definition (Priority: ${p.priority}):</strong><br>${p.rule_definition}
+            </div>
+            <div style="display:flex; gap:0.5rem; margin-top:0.6rem;">
+              <button class="btn btn-secondary" style="font-size:0.7rem; padding:0.3rem 0.6rem;" onclick="openEditPolicyModal('${p.policy_id}')">✏ Edit</button>
+              <button class="btn ${p.status === 'ACTIVE' ? 'btn-modify' : 'btn-approve'}" style="font-size:0.7rem; padding:0.3rem 0.6rem;" onclick="togglePolicyStatus('${p.policy_id}', '${p.status}')">
+                ${p.status === 'ACTIVE' ? '⏸ Deactivate' : '▶ Activate'}
+              </button>
+              <button class="btn btn-reject" style="font-size:0.7rem; padding:0.3rem 0.6rem;" onclick="deletePolicy('${p.policy_id}')">🗑 Delete</button>
+            </div>
+          </div>`;
+        }).join('');
+      } catch (err) {
+        console.error("Failed to fetch policies:", err);
+        container.innerHTML = `<div style="color:var(--color-reject); padding:1rem;">Error loading policies from server.</div>`;
+      }
+    }
+
+    function openCreatePolicyModal() {
+      document.getElementById('new-policy-id').value = '';
+      document.getElementById('new-policy-name').value = '';
+      document.getElementById('new-policy-desc').value = '';
+      document.getElementById('new-policy-rule').value = '';
+      document.getElementById('new-policy-action').value = 'APPROVE';
+      document.getElementById('new-policy-priority').value = 'MEDIUM';
+      document.getElementById('new-policy-status').value = 'ACTIVE';
+      document.getElementById('create-policy-modal').style.display = 'flex';
+    }
+
+    function closeCreatePolicyModal() {
+      document.getElementById('create-policy-modal').style.display = 'none';
+    }
+
+    async function submitCreatePolicy() {
+      const policy_id = document.getElementById('new-policy-id').value.trim();
+      const name = document.getElementById('new-policy-name').value.trim();
+      const description = document.getElementById('new-policy-desc').value.trim();
+      const rule_definition = document.getElementById('new-policy-rule').value.trim();
+      const decision_action = document.getElementById('new-policy-action').value;
+      const priority = document.getElementById('new-policy-priority').value;
+      const status = document.getElementById('new-policy-status').value;
+
+      if (!policy_id || !name || !rule_definition) {
+        alert("Policy ID, Policy Name, and Rule Definition are required fields.");
+        return;
+      }
+
+      const btn = document.getElementById('btn-submit-create-policy');
+      btn.disabled = true;
+      btn.innerText = "Saving Policy...";
+
+      try {
+        const res = await fetch('/api/policies', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ policy_id, name, description, rule_definition, decision_action, priority, status, created_by: 'admin' })
+        });
+
+        if (!res.ok) {
+          const errData = await res.json();
+          alert("Error creating policy: " + (errData.detail || "Server error"));
+          return;
+        }
+
+        closeCreatePolicyModal();
+        await fetchPolicies();
+        await loadPolicyEvolutionData();
+      } catch (err) {
+        console.error("Failed to create policy:", err);
+        alert("Failed to connect to backend server.");
+      } finally {
+        btn.disabled = false;
+        btn.innerText = "Create Policy";
+      }
+    }
+
+    async function openEditPolicyModal(policyId) {
+      try {
+        const res = await fetch(`/api/policies/${policyId}`);
+        if (!res.ok) {
+          alert("Policy not found.");
+          return;
+        }
+        const p = await res.json();
+
+        document.getElementById('edit-policy-id').value = p.policy_id;
+        document.getElementById('edit-policy-name').value = p.name;
+        document.getElementById('edit-policy-desc').value = p.description || '';
+        document.getElementById('edit-policy-rule').value = p.rule_definition;
+        document.getElementById('edit-policy-action').value = p.decision_action;
+        document.getElementById('edit-policy-priority').value = p.priority;
+        document.getElementById('edit-policy-status').value = p.status;
+        document.getElementById('edit-policy-version-notice').innerText = `Current version: v${p.version}. Saving updates will increment version to v${p.version + 1}.`;
+
+        document.getElementById('edit-policy-modal').style.display = 'flex';
+      } catch (err) {
+        console.error("Error opening edit modal:", err);
+      }
+    }
+
+    function closeEditPolicyModal() {
+      document.getElementById('edit-policy-modal').style.display = 'none';
+    }
+
+    async function submitEditPolicy() {
+      const policy_id = document.getElementById('edit-policy-id').value;
+      const name = document.getElementById('edit-policy-name').value.trim();
+      const description = document.getElementById('edit-policy-desc').value.trim();
+      const rule_definition = document.getElementById('edit-policy-rule').value.trim();
+      const decision_action = document.getElementById('edit-policy-action').value;
+      const priority = document.getElementById('edit-policy-priority').value;
+      const status = document.getElementById('edit-policy-status').value;
+
+      if (!name || !rule_definition) {
+        alert("Policy Name and Rule Definition are required fields.");
+        return;
+      }
+
+      const btn = document.getElementById('btn-submit-edit-policy');
+      btn.disabled = true;
+      btn.innerText = "Saving Changes...";
+
+      try {
+        const res = await fetch(`/api/policies/${policy_id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, description, rule_definition, decision_action, priority, status })
+        });
+
+        if (!res.ok) {
+          const errData = await res.json();
+          alert("Error updating policy: " + (errData.detail || "Server error"));
+          return;
+        }
+
+        closeEditPolicyModal();
+        await fetchPolicies();
+        await loadPolicyEvolutionData();
+      } catch (err) {
+        console.error("Failed to update policy:", err);
+        alert("Failed to connect to backend server.");
+      } finally {
+        btn.disabled = false;
+        btn.innerText = "Save Changes";
+      }
+    }
+
+    async function togglePolicyStatus(policyId, currentStatus) {
+      const newStatus = currentStatus === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
+      try {
+        const res = await fetch(`/api/policies/${policyId}/status`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: newStatus })
+        });
+
+        if (!res.ok) {
+          alert("Error changing policy status.");
+          return;
+        }
+        await fetchPolicies();
+        await loadPolicyEvolutionData();
+      } catch (err) {
+        console.error("Failed to toggle policy status:", err);
+      }
+    }
+
+    async function deletePolicy(policyId) {
+      if (!confirm(`Are you sure you want to delete policy '${policyId}'?`)) return;
+      try {
+        const res = await fetch(`/api/policies/${policyId}`, { method: 'DELETE' });
+        if (!res.ok) {
+          alert("Failed to delete policy.");
+          return;
+        }
+        await fetchPolicies();
+        await loadPolicyEvolutionData();
+      } catch (err) {
+        console.error("Failed to delete policy:", err);
+      }
+    }
+
+    function loadScenario(num) {
+      const s = scenarios[num];
+      document.getElementById('user_id').value = s.user_id;
+      document.getElementById('role').value = s.role;
+      document.getElementById('action').value = s.action;
+      document.getElementById('target').value = s.target;
+      document.getElementById('data_classification').value = s.data_classification;
+      document.getElementById('business_purpose').value = s.business_purpose;
+      document.getElementById('authorization_status').value = s.authorization_status;
+
+      updateLiveSignals();
+
+      remediationHistory = null;
+      document.getElementById('remediation-applied-container').style.display = 'none';
+      document.getElementById('remediation-applied-container').innerHTML = '';
+    }
+
+    async function handleGovern(event) {
+      if (event) event.preventDefault();
+      
+      const submitBtn = document.getElementById('btn-submit');
+      if (submitBtn) { submitBtn.disabled = true; submitBtn.innerText = 'Evaluating Governance Pipeline...'; }
+
+      document.getElementById('unsaved-badge').style.display = 'none';
+      document.getElementById('confidence-label').innerText = 'Confidence: Evaluating...';
+
+      currentRequest = {
+        user_id: document.getElementById('user_id').value,
+        role: document.getElementById('role').value,
+        action: document.getElementById('action').value,
+        target: document.getElementById('target').value,
+        data_classification: document.getElementById('data_classification').value,
+        business_purpose: document.getElementById('business_purpose').value,
+        authorization_status: document.getElementById('authorization_status').value
+      };
+
+      try {
+        const response = await fetch('/api/govern', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(currentRequest)
+        });
+        
+        const data = await response.json();
+        currentEvaluationData = data;
+        renderGovernanceResult(data);
+        fetchAuditHistory();
+      } catch (err) {
+        console.error('Governance error:', err);
+      } finally {
+        if (submitBtn) { submitBtn.disabled = false; submitBtn.innerText = 'Evaluate Governance Action'; }
+      }
+    }
+
+    function renderGovernanceResult(data) {
+      currentRequestId = data.request_id;
+      
+      if (data.llm_provider) {
+        document.getElementById('provider-pill').innerText = 'IBM Granite 7B — ' + data.llm_provider;
+      }
+
+      if (data.confidence !== undefined && data.confidence !== null) {
+        const confPct = Math.round(data.confidence * 100);
+        const confElem = document.getElementById('confidence-label');
+        if (confElem) confElem.innerText = `Confidence: ${confPct}%`;
+      }
+
+      // 1. Decision Banner Styling & Workflow Controls
+      const banner = document.getElementById('decision-panel');
+      const decText = document.getElementById('decision-text');
+      const decDesc = document.getElementById('decision-desc');
+      const actionControls = document.getElementById('decision-action-controls');
+      
+      banner.className = 'decision-banner ';
+
+      if (data.decision === 'APPROVE') {
+        banner.classList.add('badge-approve');
+        decText.innerText = '✓ ACTION APPROVED';
+        decDesc.innerText = 'Governance checks passed. The action is authorized for execution.';
+        actionControls.innerHTML = `<button class="btn btn-approve" onclick="simulateExecution()">⚡ Simulate Execution</button>`;
+      } else if (data.decision === 'MODIFY') {
+        banner.classList.add('badge-modify');
+        decText.innerText = '⚠ POLICY DECISION: MODIFICATION REQUIRED';
+        const finalNotice = data.final_decision ? ` (Status: ${data.final_decision})` : '';
+        decDesc.innerText = `The requested intent is permissible, but specific transformations are required before execution.${finalNotice}`;
+        actionControls.innerHTML = `<button class="btn btn-modify" onclick="simulateRemediation()">⚡ Apply Modifications & Re-evaluate</button>`;
+      } else if (data.decision === 'ESCALATE') {
+        banner.classList.add('badge-escalate');
+        decText.innerText = '🟠 HUMAN REVIEW REQUIRED';
+        decDesc.innerText = 'This action requires an authorized human decision-maker (CISO / Security Manager / DPO).';
+        actionControls.innerHTML = `<button class="btn btn-modify" onclick="openHumanModal()">👤 Send to Human Review</button>`;
+      } else {
+        banner.classList.add('badge-reject');
+        decText.innerText = '🔴 ACTION REJECTED';
+        decDesc.innerText = 'This action has been blocked because it violates a non-negotiable governance policy.';
+        actionControls.innerHTML = `
+          <div style="display:flex; gap:0.5rem;">
+            <button class="btn btn-secondary" onclick="viewPolicySource('data_transfer_policy')">🔍 Policy Evidence</button>
+            <button class="btn btn-secondary" onclick="switchTab('audit')">📋 Audit Trail</button>
+          </div>
+        `;
+      }
+
+      // Dynamic Pipeline Agent Executions
+      if (data.agents_executed && data.agents_executed.length > 0) {
+        const grid = document.getElementById('pipeline-grid');
+        grid.innerHTML = data.agents_executed.map(ag => {
+          const name = ag.agent_name === 'llm_reasoning' ? 'Granite LLM' :
+                       ag.agent_name.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+          const duration = (ag.duration_ms !== undefined && ag.duration_ms !== null) ? 
+                           (ag.duration_ms >= 100 ? Math.round(ag.duration_ms) + 'ms' : ag.duration_ms.toFixed(1) + 'ms') : '1ms';
+          const isCompleted = ag.status === 'COMPLETED';
+          return `
+            <div class="agent-card ${isCompleted ? 'completed' : ''}" onclick="openAgentModal('${ag.agent_name}')">
+              <div class="agent-name">${name}</div>
+              <div class="agent-status">${ag.status === 'COMPLETED' ? 'Completed (' + duration + ')' : ag.status}</div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      // 3-Stage Risk Analysis metric card updates
+      const circle = document.getElementById('score-circle');
+      const scoreNum = document.getElementById('score-num');
+      
+      const inhScore = data.inherent_risk ? data.inherent_risk.score : (data.inherent_risk_score || data.risk_score);
+      const inhLevel = data.inherent_risk ? data.inherent_risk.level : (data.risk_level || 'HIGH');
+      const redPts = data.risk_reduction !== undefined ? data.risk_reduction : 0;
+      const effScore = data.effective_risk !== undefined ? data.effective_risk : (data.final_risk ? data.final_risk.score : data.risk_score);
+      const effLevel = data.risk_level || (data.final_risk ? data.final_risk.level : 'LOW');
+      const sourceStr = (data.decision_source || 'explicit_policy').replace(/_/g, ' ').toUpperCase();
+
+      document.getElementById('card-inh-score').innerText = inhScore;
+      document.getElementById('card-inh-level').innerText = inhLevel;
+      document.getElementById('card-reduction-score').innerText = redPts > 0 ? `-${redPts}` : (redPts < 0 ? `+${Math.abs(redPts)}` : '0');
+      document.getElementById('card-eff-score').innerText = effScore;
+      document.getElementById('card-eff-level').innerText = effLevel;
+      document.getElementById('card-decision-source').innerText = sourceStr;
+
+      scoreNum.innerText = effScore;
+
+      const color = data.decision === 'APPROVE' ? 'var(--color-approve)' :
+                    data.decision === 'MODIFY' ? 'var(--color-modify)' :
+                    data.decision === 'ESCALATE' ? 'var(--color-escalate)' : 'var(--color-reject)';
+      circle.style.borderColor = color;
+      scoreNum.style.color = color;
+
+      // Dynamic Risk factors & Mitigating Factors
+      const factorsContainer = document.getElementById('risk-factors');
+      let factorsHtml = '';
+      if (data.risk && data.risk.risk_factors) {
+        factorsHtml += data.risk.risk_factors.map(f => 
+          `<div class="factor-item">${f.factor.replace(/_/g, ' ').toUpperCase()}: <strong>${f.score}</strong></div>`
+        ).join('');
+      }
+      if (data.risk && data.risk.mitigating_factors && data.risk.mitigating_factors.length > 0) {
+        factorsHtml += data.risk.mitigating_factors.map(m =>
+          `<div class="factor-item" style="color:var(--color-approve); font-size:0.7rem;">✓ ${m}</div>`
+        ).join('');
+      }
+      factorsContainer.innerHTML = factorsHtml;
+
+      // Dynamic Decision Rationale list
+      if (data.decision_rationale && data.decision_rationale.length > 0) {
+        const ratList = document.getElementById('rationale-list');
+        ratList.innerHTML = data.decision_rationale.map(r => `<div class="rationale-item">${r}</div>`).join('');
+      }
+
+      // Two-Stage Transformation View (FOR MODIFY OUTCOME ONLY)
+      const transBox = document.getElementById('transformation-container');
+      if (data.decision === 'MODIFY' && data.transformation) {
+        transBox.style.display = 'block';
+        let changesHtml = '';
+        if (data.transformation.changes && data.transformation.changes.length > 0) {
+          changesHtml = data.transformation.changes.map(c => 
+            `<div style="font-size:0.75rem; margin-top:0.3rem;">✓ <strong>${c.field.replace(/_/g, ' ')}:</strong> ${c.before} ➔ <span style="color:var(--color-approve); font-weight:600;">${c.after}</span> (${c.reason})</div>`
+          ).join('');
+        }
+        
+        let twoStageHtml = '';
+        if (data.final_risk && data.risk_reduction !== undefined) {
+          twoStageHtml = `
+            <div style="display:flex; align-items:center; gap:1.5rem; background:rgba(255,255,255,0.03); padding:0.8rem; border-radius:8px; border:1px solid rgba(255,255,255,0.08); margin-bottom:0.75rem;">
+              <div style="text-align:center;">
+                <div style="font-size:0.65rem; color:var(--text-muted);">INHERENT RISK</div>
+                <div style="font-size:1.1rem; font-weight:700; color:var(--color-modify);">${data.inherent_risk.score} / ${data.inherent_risk.level}</div>
+              </div>
+              <div style="font-size:1.1rem; color:var(--color-approve); font-weight:700;">➔</div>
+              <div style="text-align:center;">
+                <div style="font-size:0.65rem; color:var(--text-muted);">REDUCTION</div>
+                <div style="font-size:0.95rem; font-weight:700; color:var(--color-approve);">↓ ${data.risk_reduction} pts</div>
+              </div>
+              <div style="font-size:1.1rem; color:var(--color-approve); font-weight:700;">➔</div>
+              <div style="text-align:center;">
+                <div style="font-size:0.65rem; color:var(--text-muted);">EFFECTIVE RISK</div>
+                <div style="font-size:1.1rem; font-weight:700; color:var(--color-approve);">${data.final_risk.score} / ${data.final_risk.level}</div>
+              </div>
+            </div>
+          `;
+        }
+
+        transBox.innerHTML = `
+          <div class="panel-title" style="color: var(--color-modify);">Two-Stage Action Transformation & Re-evaluation</div>
+          ${twoStageHtml}
+          <div class="diff-box">
+            <div class="diff-del">- Original Action: ${data.transformation.original_action || data.transformation.original_request.action || ''}</div>
+            <div class="diff-add">+ Transformed Action: ${data.transformation.transformed_action || data.transformation.modified_request.action || ''}</div>
+            ${changesHtml}
+          </div>
+        `;
+      } else {
+        transBox.style.display = 'none';
+      }
+
+      // Remediation Applied Summary Card
+      const remAppliedContainer = document.getElementById('remediation-applied-container');
+      if (remediationHistory && remediationHistory.request_id === data.request_id) {
+        remAppliedContainer.style.display = 'block';
+        remAppliedContainer.innerHTML = `
+          <div class="remediation-applied-box">
+            <div class="rem-header">
+              <span class="badge badge-approve" style="font-size:0.75rem;">✓ MODIFICATION APPLIED & RE-EVALUATED</span>
+              <span style="font-size:0.75rem; color:var(--text-muted);">Request ID: ${remediationHistory.request_id}</span>
+            </div>
+            
+            <div class="rem-comparison">
+              <div class="rem-col">
+                <div class="rem-title">BEFORE MODIFICATION</div>
+                <div class="badge badge-${remediationHistory.originalDecision.toLowerCase()}" style="font-size:0.8rem; padding:0.3rem 0.6rem; width:fit-content;">
+                  ${remediationHistory.originalDecision} — Inherent Risk ${remediationHistory.originalRisk} (${remediationHistory.originalRiskLevel})
+                </div>
+                <div style="font-size:0.75rem; color:var(--text-secondary); margin-top:0.4rem;">
+                  <strong>Action:</strong> ${remediationHistory.originalAction}
+                </div>
+                <div style="font-size:0.75rem; color:var(--text-secondary); margin-top:0.2rem;">
+                  <strong>Target:</strong> ${remediationHistory.originalTarget}
+                </div>
+              </div>
+
+              <div class="rem-divider">➔</div>
+
+              <div class="rem-col">
+                <div class="rem-title">AFTER MODIFICATION</div>
+                <div class="badge badge-approve" style="font-size:0.8rem; padding:0.3rem 0.6rem; width:fit-content;">
+                  APPROVED AFTER MODIFICATION — Effective Risk ${data.risk_score} (${data.risk_level})
+                </div>
+                <div style="font-size:0.75rem; color:var(--text-secondary); margin-top:0.4rem;">
+                  <strong>Action:</strong> ${data.action || currentRequest.action}
+                </div>
+                <div style="font-size:0.75rem; color:var(--text-secondary); margin-top:0.2rem;">
+                  <strong>Target:</strong> ${data.target || currentRequest.target}
+                </div>
+              </div>
+            </div>
+
+            <div style="margin-top:0.75rem; font-size:0.75rem; color:var(--text-secondary);">
+              <strong>Applied Modifications:</strong>
+              <ul style="margin-top:0.25rem; margin-left:1.2rem; color:var(--color-approve);">
+                ${remediationHistory.changesApplied.map(c => `<li>${c}</li>`).join('')}
+              </ul>
+            </div>
+          </div>
+        `;
+      } else {
+        remAppliedContainer.style.display = 'none';
+        remAppliedContainer.innerHTML = '';
+      }
+
+      // Action Interception Simulation Node Updates
+      document.getElementById('sim-data-node').innerText = `Data: ${data.data_classification || 'Internal'}`;
+      document.getElementById('sim-target-node').innerText = `Target: ${data.target}`;
+      const simStep = document.getElementById('sim-final-step');
+
+      if (data.decision === 'APPROVE') {
+        simStep.style.color = 'var(--color-approve)';
+        simStep.innerText = '✓ Action execution ALLOWED';
+      } else if (data.decision === 'MODIFY') {
+        simStep.style.color = 'var(--color-modify)';
+        simStep.innerText = `⚠ Execution PAUSED (Modification Required -> ${data.final_decision || 'APPROVED AFTER MODIFICATION'})`;
+      } else if (data.decision === 'ESCALATE') {
+        simStep.style.color = 'var(--color-escalate)';
+        simStep.innerText = '⚠ Execution PAUSED (Pending Human Review)';
+      } else {
+        simStep.style.color = 'var(--color-reject)';
+        simStep.innerText = '✕ Execution BLOCKED (Prohibited Policy Violation)';
+      }
+
+      // Evidence list
+      const evidenceContainer = document.getElementById('evidence-list');
+      if (data.evidence && data.evidence.length > 0) {
+        evidenceContainer.innerHTML = data.evidence.map(e => `
+          <div class="evidence-item">
+            <div class="evidence-header">
+              <span>${e.policy_name} (${e.section})</span>
+              <span class="badge badge-approve">${Math.round(e.relevance_score * 100)}% Relevance</span>
+            </div>
+            <p style="margin-bottom:0.5rem;">${e.text}</p>
+            <div style="font-size:0.7rem; color:var(--text-muted); display:flex; justify-content:space-between; align-items:center;">
+              <span>Source: ${e.source_file} | Status: Active</span>
+              <button class="btn btn-secondary" style="padding:0.2rem 0.5rem; font-size:0.65rem;" onclick="viewPolicySource('${e.policy_id}')">View Source</button>
+            </div>
+          </div>
+        `).join('');
+      } else {
+        evidenceContainer.innerHTML = '<p style="font-size:0.8rem; color:var(--text-muted);">No policy evidence retrieved.</p>';
+      }
+    }
+
+    // APPROVE WORKFLOW: Simulate Execution
+    async function simulateExecution() {
+      const simStep = document.getElementById('sim-final-step');
+      simStep.style.color = 'var(--color-approve)';
+      simStep.innerHTML = '⚡ <strong>ACTION EXECUTED IN CONTROL PLANE SIMULATION MODE</strong>';
+      alert('Execution Authorized & Simulated: Action passed pre-execution governance checks and executed successfully.');
+      fetchAuditHistory();
+    }
+
+    // MODIFY WORKFLOW: Apply Modifications & Re-evaluate
+    async function simulateRemediation() {
+      if (!currentRequest || !currentEvaluationData) {
+        alert('Please evaluate a request first.');
+        return;
+      }
+
+      const xform = currentEvaluationData.transformation;
+      if (xform && xform.transformation_blocked) {
+        alert(`Transformation BLOCKED: ${xform.block_reason || 'Action is inherently dangerous and cannot be safely modified.'}`);
+        return;
+      }
+
+      const originalRisk = currentEvaluationData.risk_score;
+      const originalRiskLevel = currentEvaluationData.risk_level;
+      const originalDecision = currentEvaluationData.decision;
+      const originalAction = currentRequest.action;
+      const originalTarget = currentRequest.target;
+
+      const remediatedRequest = JSON.parse(JSON.stringify(currentRequest));
+      const changesApplied = [];
+
+      if (xform && xform.transformation_applied && xform.modified_request) {
+        const modReq = xform.modified_request;
+        if (modReq.action && modReq.action !== remediatedRequest.action) {
+          remediatedRequest.action = modReq.action;
+          changesApplied.push(`Action transformed: ${modReq.action}`);
+        }
+        if (modReq.target && modReq.target !== remediatedRequest.target) {
+          remediatedRequest.target = modReq.target;
+          changesApplied.push(`Target changed to: ${modReq.target}`);
+        }
+        if (modReq.data_classification && modReq.data_classification !== remediatedRequest.data_classification) {
+          remediatedRequest.data_classification = modReq.data_classification;
+          changesApplied.push(`Data classification changed to: ${modReq.data_classification}`);
+        }
+        if (modReq.authorization_status && modReq.authorization_status !== remediatedRequest.authorization_status) {
+          remediatedRequest.authorization_status = modReq.authorization_status;
+          changesApplied.push(`Authorization status changed to: ${modReq.authorization_status}`);
+        }
+      } else {
+        remediatedRequest.target = 'approved-internal-analytics';
+        changesApplied.push('Changed target endpoint to approved internal analytics');
+        remediatedRequest.action = 'Export anonymized aggregated customer analytics';
+        changesApplied.push('Applied data minimization & PII field anonymization');
+        remediatedRequest.data_classification = 'Internal';
+        remediatedRequest.authorization_status = 'Verified';
+        changesApplied.push('Verified required user security clearance & authorization');
+      }
+
+      document.getElementById('action').value = remediatedRequest.action;
+      document.getElementById('target').value = remediatedRequest.target;
+      document.getElementById('data_classification').value = remediatedRequest.data_classification;
+      document.getElementById('authorization_status').value = remediatedRequest.authorization_status;
+
+      updateLiveSignals();
+
+      try {
+        const response = await fetch('/api/govern', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(remediatedRequest)
+        });
+
+        const newEvaluationData = await response.json();
+
+        remediationHistory = {
+          request_id: newEvaluationData.request_id,
+          originalRisk: originalRisk,
+          originalRiskLevel: originalRiskLevel,
+          originalDecision: originalDecision,
+          originalAction: originalAction,
+          originalTarget: originalTarget,
+
+          remediatedRisk: newEvaluationData.risk_score,
+          remediatedRiskLevel: newEvaluationData.risk_level,
+          remediatedDecision: newEvaluationData.decision,
+          remediatedAction: remediatedRequest.action,
+          remediatedTarget: remediatedRequest.target,
+          changesApplied: changesApplied
+        };
+
+        currentRequest = remediatedRequest;
+        currentEvaluationData = newEvaluationData;
+
+        renderGovernanceResult(newEvaluationData);
+        fetchAuditHistory();
+      } catch (err) {
+        console.error('Modification re-evaluation error:', err);
+      }
+    }
+
+    let allAuditRecords = [];
+
+    async function fetchAuditHistory() {
+      try {
+        const res = await fetch('/api/audit');
+        const data = await res.json();
+        allAuditRecords = data.records || [];
+        
+        document.getElementById('m-evaluated').innerText = allAuditRecords.length;
+        document.getElementById('m-approved').innerText = allAuditRecords.filter(r => r.decision === 'APPROVE').length;
+        document.getElementById('m-modified').innerText = allAuditRecords.filter(r => r.decision === 'MODIFY').length;
+        document.getElementById('m-blocked').innerText = allAuditRecords.filter(r => r.decision === 'ESCALATE' || r.decision === 'REJECT').length;
+
+        renderAuditTable(allAuditRecords);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    function renderAuditTable(records) {
+      const body = document.getElementById('audit-table-body');
+      if (!body) return;
+
+      if (!records || records.length === 0) {
+        body.innerHTML = `<tr><td colspan="8" style="text-align:center; color:var(--text-muted); padding:1.5rem;">No audit records found.</td></tr>`;
+        return;
+      }
+
+      body.innerHTML = records.map(r => `
+        <tr>
+          <td>${new Date(r.timestamp).toLocaleTimeString()}</td>
+          <td style="font-family:'JetBrains Mono', monospace; font-size:0.75rem; color:var(--accent-indigo);">${r.request_id}</td>
+          <td>${r.user_id}</td>
+          <td>${r.role}</td>
+          <td>${r.action.length > 35 ? r.action.substring(0,35)+'...' : r.action}</td>
+          <td style="font-family:'JetBrains Mono', monospace; font-size:0.72rem;">${r.target}</td>
+          <td><span class="badge badge-${r.decision.toLowerCase()}">${r.decision}</span></td>
+          <td><strong>${r.risk_score}</strong></td>
+        </tr>
+      `).join('');
+    }
+
+    function filterAuditTrail() {
+      const q = (document.getElementById('audit-search-input').value || '').toLowerCase().trim();
+      if (!q) {
+        renderAuditTable(allAuditRecords);
+        return;
+      }
+      const filtered = allAuditRecords.filter(r => 
+        (r.request_id || '').toLowerCase().includes(q) ||
+        (r.user_id || '').toLowerCase().includes(q) ||
+        (r.role || '').toLowerCase().includes(q) ||
+        (r.action || '').toLowerCase().includes(q) ||
+        (r.target || '').toLowerCase().includes(q) ||
+        (r.decision || '').toLowerCase().includes(q)
+      );
+      renderAuditTable(filtered);
+    }
+
+    function openHumanModal() {
+      if (currentRequest) {
+        document.getElementById('modal-requester').innerText = `${currentRequest.user_id} (${currentRequest.role})`;
+        document.getElementById('modal-action').innerText = currentRequest.action;
+        document.getElementById('modal-target').innerText = currentRequest.target;
+        document.getElementById('modal-case-id').innerText = `GOV-${currentRequestId.replace('REQ-', '')}`;
+      }
+      document.getElementById('human-modal').style.display = 'flex';
+    }
+
+    // ESCALATE WORKFLOW: Human Review Decision
+    async function submitReview(action) {
+      const comments = document.getElementById('reviewer-comments').value || 'Reviewed by CISO/Security Officer';
+      try {
+        const res = await fetch(`/api/review/${currentRequestId}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: action, comments: comments })
+        });
+        const result = await res.json();
+        document.getElementById('human-modal').style.display = 'none';
+        
+        if (currentEvaluationData) {
+          currentEvaluationData.decision = result.updated_decision;
+          currentEvaluationData.explanation = `Human Reviewer (${result.reviewer_id}) submitted: ${action.toUpperCase()}. ${comments}`;
+          renderGovernanceResult(currentEvaluationData);
+
+          const simStep = document.getElementById('sim-final-step');
+          if (result.updated_decision === 'APPROVE') {
+            simStep.style.color = 'var(--color-approve)';
+            simStep.innerText = '✓ Action execution ALLOWED (Human Approval Granted)';
+          } else {
+            simStep.style.color = 'var(--color-reject)';
+            simStep.innerText = '✕ Action execution BLOCKED (Human Reviewer Rejected)';
+          }
+        }
+        fetchAuditHistory();
+        alert(`Human Review Decision Recorded: ${result.updated_decision}`);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    function openAgentModal(agentKey) {
+      const modal = document.getElementById('agent-modal');
+      const title = document.getElementById('agent-modal-title');
+      const body = document.getElementById('agent-modal-body');
+
+      const agentMap = {
+        planner: { name: "1. Planner Agent", desc: "Formulates governance execution plan.", input: "Proposed Action Request", output: "Ordered execution plan (7 steps)", status: "Completed (1ms)" },
+        intent: { name: "2. Intent Agent", desc: "Classifies underlying action intent & sensitivity.", input: currentEvaluationData ? currentEvaluationData.intent : "Action parameters", output: "Data classification & exposure indicators", status: "Completed (1ms)" },
+        identity: { name: "3. Identity Agent", desc: "Verifies user clearance and role permissions.", input: currentEvaluationData ? currentEvaluationData.identity : "User ID & Role", output: "Role permission checks & clearance verification", status: "Completed (1ms)" },
+        policy_retrieval: { name: "4. Policy RAG Agent", desc: "Retrieves evidence from enterprise policy files.", input: "Action query & target context", output: `${currentEvaluationData ? (currentEvaluationData.evidence || []).length : 2} policy evidence items retrieved`, status: "Completed (4ms)" },
+        compliance: { name: "5. Compliance Agent", desc: "Evaluates compliance against retrieved evidence.", input: "Retrieved policy clauses", output: currentEvaluationData ? currentEvaluationData.compliance : "Compliance status", status: "Completed (1ms)" },
+        risk: { name: "6. Risk Agent", desc: "Calculates weighted policy risk score.", input: "Risk factors & policy violations", output: `Risk Score: ${currentEvaluationData ? currentEvaluationData.risk_score : 15}/100`, status: "Completed (1ms)" },
+        reviewer: { name: "7. Reviewer Agent", desc: "Validates decision & human escalation triggers.", input: "Risk score & compliance findings", output: `Human Review Required: ${currentEvaluationData ? currentEvaluationData.human_review_required : false}`, status: "Completed (1ms)" }
+      };
+
+      const agent = agentMap[agentKey] || agentMap['planner'];
+      title.innerText = agent.name;
+      body.innerHTML = `
+        <p style="margin-bottom:0.75rem;"><strong>Responsibility:</strong> ${agent.desc}</p>
+        <p style="margin-bottom:0.75rem;"><strong>Status:</strong> <span class="badge badge-approve">${agent.status}</span></p>
+        <div class="diff-box" style="margin-bottom:0.75rem;">
+          <div><strong>Input:</strong> ${JSON.stringify(agent.input, null, 2)}</div>
+        </div>
+        <div class="diff-box">
+          <div><strong>Output:</strong> ${JSON.stringify(agent.output, null, 2)}</div>
+        </div>
+      `;
+      modal.style.display = 'flex';
+    }
+
+    function closeAgentModal() {
+      document.getElementById('agent-modal').style.display = 'none';
+    }
+
+    function viewPolicySource(policyId) {
+      const modal = document.getElementById('policy-modal');
+      const title = document.getElementById('policy-modal-title');
+      const body = document.getElementById('policy-modal-body');
+
+      const textMap = {
+        human_approval_policy: "# Human Approval Policy (POL-HUM-001)\n\n## 4. Approval Authority Levels\n1. Risk Score >= 70 requires CISO or VP-level authorization.\n2. Transfers to unapproved external endpoints require explicit human review.\n3. Escalated actions remain blocked until human reviewer submits approval.",
+        data_transfer_policy: "# Data Transfer Policy (POL-TRN-002)\n\n## 5. External Endpoint Rules\n1. Confidential or Restricted data cannot be sent to unapproved public endpoints.\n2. Internal transfers to approved analytics proxies are allowed.\n3. Prohibited transfers result in immediate REJECT decision.",
+        pii_policy: "# PII Protection Policy (POL-PII-003)\n\n## 3. Anonymization Requirements\n1. Customer records containing email or phone numbers must be anonymized before external transfer.\n2. The Transformation Agent can apply automated field stripping to allow compliance.",
+        data_minimization_policy: "# Data Minimization Policy (POL-MIN-004)\n\n## 2. Export View Limitation\n1. Full database exports are prohibited.\n2. Data transfers must use filtered views or aggregated metrics."
+      };
+
+      title.innerText = policyId.replace(/_/g, ' ').toUpperCase();
+      body.innerText = textMap[policyId] || "# Enterprise Policy Document\n\nActive enterprise policy clause for AegisMesh governance.";
+      modal.style.display = 'flex';
+    }
+
+    function closePolicyModal() {
+      document.getElementById('policy-modal').style.display = 'none';
+    }
+
+    // --- POLICY EVOLUTION INTELLIGENCE FUNCTIONS ---
+    async function loadPolicyEvolutionData() {
+      try {
+        const kpiRes = await fetch('/api/policy-evolution/kpi');
+        const kpi = await kpiRes.json();
+        document.getElementById('evo-kpi-active').innerText = kpi.active_policies_count || 6;
+        document.getElementById('evo-kpi-changes').innerText = kpi.policy_changes_detected || 0;
+        document.getElementById('evo-kpi-review').innerText = kpi.requires_human_review_count || 0;
+        document.getElementById('evo-kpi-regressions').innerText = kpi.critical_regressions_count || 0;
+
+        const eventsRes = await fetch('/api/policy-evolution/events');
+        const eventsData = await eventsRes.json();
+        renderEvolutionTimeline(eventsData.events || []);
+
+        const confRes = await fetch('/api/policy-evolution/conflicts');
+        const confData = await confRes.json();
+        renderEvolutionConflicts(confData.conflicts || []);
+      } catch (err) {
+        console.error('Error loading policy evolution data:', err);
+      }
+    }
+
+    function renderEvolutionTimeline(events) {
+      const container = document.getElementById('evolution-timeline');
+      if (!events || events.length === 0) {
+        container.innerHTML = `
+          <div style="text-align:center; padding:2rem; color:var(--text-secondary); border:1px dashed var(--border-color); border-radius:10px;">
+            <div style="font-size:1.5rem; margin-bottom:0.5rem;">🧬</div>
+            <div>No Policy Change Events Recorded Yet.</div>
+            <p style="font-size:0.75rem; margin-top:0.4rem; color:var(--text-muted);">
+              Create, edit, or deactivate a policy under <strong>Policies (Code)</strong> to trigger Autonomous Policy Evolution Analysis.
+            </p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = events.map(ev => {
+        const impactColor = ev.impact_level === 'CRITICAL' ? 'var(--color-reject)' :
+                           ev.impact_level === 'HIGH' ? 'var(--color-escalate)' :
+                           ev.impact_level === 'MODERATE' ? 'var(--color-modify)' : 'var(--color-approve)';
+
+        const statusBadgeClass = ev.human_review_status === 'APPROVED' || ev.human_review_status === 'AUTO_ENFORCED' ? 'badge-approve' :
+                                 ev.human_review_status === 'PENDING' ? 'badge-escalate' : 'badge-reject';
+
+        const dateStr = ev.created_at ? new Date(ev.created_at).toLocaleString() : '';
+        const changedFieldsStr = (ev.report && ev.report.changed_fields && ev.report.changed_fields.length > 0) ? 
+          ev.report.changed_fields.map(f => f.replace(/_/g, ' ')).join(', ') : 'Rule Definition / Metadata';
+
+        const versionTransition = ev.previous_version > 0 ? `v${ev.previous_version} → v${ev.version}` : `v${ev.version} (Initial)`;
+
+        return `
+          <div style="background:rgba(255,255,255,0.02); border:1px solid var(--border-color); border-radius:10px; padding:1rem; display:flex; justify-content:space-between; align-items:flex-start;">
+            <div style="flex:1;">
+              <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.4rem; flex-wrap:wrap;">
+                <strong style="color:var(--accent-indigo); font-size:0.95rem;">${ev.policy_id}</strong>
+                <span class="badge" style="background:rgba(99,102,241,0.2); color:white; font-size:0.7rem; font-weight:700;">${versionTransition}</span>
+                <span class="badge" style="background:rgba(255,255,255,0.08); font-size:0.65rem;">${ev.change_type}</span>
+                <span class="badge" style="border:1px solid ${impactColor}; color:${impactColor}; font-size:0.65rem;">Impact: ${ev.impact_level} (${ev.impact_score}/100)</span>
+                <span class="badge ${statusBadgeClass}" style="font-size:0.65rem;">${ev.human_review_status}</span>
+              </div>
+
+              <div style="font-size:0.8rem; color:var(--text-primary); margin-bottom:0.4rem;">
+                <strong>Changed:</strong> <span style="color:var(--color-modify); font-weight:600;">${changedFieldsStr}</span> &bull; 
+                <span>Autonomous Analysis: <strong style="color:var(--color-approve);">Completed</strong></span>
+              </div>
+
+              <p style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:0.4rem;">
+                <strong>Result:</strong> ${ev.analysis ? (ev.analysis.semantic_summary || ev.analysis.recommended_action) : 'Policy update evaluated'}
+              </p>
+
+              <div style="font-size:0.7rem; color:var(--text-muted);">
+                <span>🕒 ${dateStr}</span> &bull; 
+                <span>Affected Historical Actions: <strong>${ev.replay_summary ? (ev.replay_summary.affected_actions_count || 0) : 0}</strong></span> &bull;
+                <span>Decision Impact: <strong>${ev.analysis ? ev.analysis.decision_impact : 'NEUTRAL'}</strong></span>
+              </div>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:0.4rem; align-items:flex-end; margin-left:1rem;">
+              <button class="btn btn-secondary" style="font-size:0.7rem; padding:0.35rem 0.75rem;" onclick="openEvolutionModal('${ev.event_id}')">
+                🔍 Change Intelligence Report
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderEvolutionConflicts(conflicts) {
+      const container = document.getElementById('conflicts-list');
+      const badge = document.getElementById('conflict-count-badge');
+      badge.innerText = `${conflicts.length} CONFLICT${conflicts.length === 1 ? '' : 'S'}`;
+
+      if (!conflicts || conflicts.length === 0) {
+        container.innerHTML = `
+          <div style="font-size:0.75rem; color:var(--color-approve); padding:0.75rem; background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.2); border-radius:8px;">
+            ✓ Zero policy condition overlaps or decision conflicts detected across active policies.
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = conflicts.map(c => `
+        <div style="background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.3); border-radius:8px; padding:0.65rem; font-size:0.75rem;">
+          <div style="color:var(--color-reject); font-weight:700; margin-bottom:0.25rem;">⚠️ Conflict: ${c.policy_ids.join(' ↔ ')}</div>
+          <div style="color:var(--text-secondary); margin-bottom:0.3rem;">${c.scenario}</div>
+          <div style="color:var(--accent-indigo); font-size:0.7rem;">Resolved By: ${c.resolved_by}</div>
+        </div>
+      `).join('');
+    }
+
+    async function openEvolutionModal(eventId) {
+      try {
+        const res = await fetch(`/api/policy-evolution/event/${eventId}`);
+        const data = await res.json();
+        
+        document.getElementById('modal-evo-title').innerText = `Policy Change Intelligence Report — ${data.policy_id} v${data.version}`;
+        document.getElementById('modal-evo-status-badge').innerText = data.human_review_status;
+        document.getElementById('modal-evo-status-badge').className = `badge ${data.human_review_status === 'APPROVED' || data.human_review_status === 'AUTO_ENFORCED' ? 'badge-approve' : 'badge-escalate'}`;
+        
+        document.getElementById('modal-evo-type').innerText = data.change_type;
+        document.getElementById('modal-evo-score').innerText = `${data.impact_score} / 100`;
+        document.getElementById('modal-evo-level').innerText = `${data.impact_level} IMPACT`;
+
+        const rep = data.report.replay_summary || {};
+        document.getElementById('modal-evo-replays').innerText = `${rep.affected_actions_count || 0} Actions`;
+
+        const oldSnap = data.old_snapshot || {};
+        const newSnap = data.new_snapshot || {};
+        document.getElementById('modal-evo-before').innerText = `- OLD (v${data.previous_version}): [Action: ${oldSnap.decision_action || 'N/A'}, Priority: ${oldSnap.priority || 'N/A'}, Status: ${oldSnap.status || 'N/A'}]\n  Rule: "${oldSnap.rule_definition || 'No prior version'}"`;
+        document.getElementById('modal-evo-after').innerText = `+ NEW (v${data.version}): [Action: ${newSnap.decision_action}, Priority: ${newSnap.priority}, Status: ${newSnap.status}]\n  Rule: "${newSnap.rule_definition}"`;
+
+        const ana = data.report.analysis || {};
+        document.getElementById('modal-evo-recommendation').innerHTML = `
+          <strong>Semantic Summary:</strong> ${ana.semantic_summary || 'Policy update evaluated'}<br/>
+          <span style="color:var(--accent-indigo); font-weight:600; margin-top:0.3rem; display:block;">Recommendation:</span> ${ana.recommended_action || 'Auto enforce change'}
+        `;
+
+        const simTbody = document.getElementById('modal-evo-simulation-table');
+        const affectedActions = rep.affected_actions || [];
+        if (affectedActions.length === 0) {
+          simTbody.innerHTML = `
+            <tr>
+              <td colspan="5" style="padding:0.75rem; text-align:center; color:var(--text-muted);">
+                Zero historical action decision changes detected across analyzed audit records.
+              </td>
+            </tr>
+          `;
+        } else {
+          simTbody.innerHTML = affectedActions.map(a => `
+            <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+              <td style="padding:0.4rem 0.6rem; color:var(--accent-indigo); font-weight:700;">${a.action_id}</td>
+              <td style="padding:0.4rem 0.6rem;">${a.action}</td>
+              <td style="padding:0.4rem 0.6rem;"><span class="badge badge-${a.old_decision.toLowerCase()}">${a.old_decision}</span></td>
+              <td style="padding:0.4rem 0.6rem;"><span class="badge badge-${a.new_decision.toLowerCase()}">${a.new_decision}</span></td>
+              <td style="padding:0.4rem 0.6rem; color:${a.is_more_restrictive ? 'var(--color-escalate)' : 'var(--color-approve)'}; font-weight:600;">
+                ${a.is_more_restrictive ? '⬆ More Restrictive' : '⬇ Less Restrictive'}
+              </td>
+            </tr>
+          `).join('');
+        }
+
+        const controlsDiv = document.getElementById('modal-evo-approval-controls');
+        if (data.requires_human_review && data.human_review_status === 'PENDING') {
+          controlsDiv.innerHTML = `
+            <div style="background:rgba(234,179,8,0.1); border:1px solid var(--color-escalate); padding:0.75rem; border-radius:8px; margin-bottom:0.5rem;">
+              <strong style="color:var(--color-escalate); display:block; margin-bottom:0.25rem;">⚠️ High-Impact Policy Enforcement Requires Approval</strong>
+              <span style="font-size:0.75rem; color:var(--text-secondary);">Material governance change requires human administrator sign-off before full control plane enforcement.</span>
+              <textarea id="evo-approval-comments" rows="2" style="width:100%; margin-top:0.5rem; background:rgba(0,0,0,0.4); border:1px solid var(--border-color); color:white; padding:0.4rem; border-radius:6px; font-size:0.75rem;" placeholder="Enter administrator justification..."></textarea>
+              <div style="display:flex; gap:0.5rem; margin-top:0.5rem;">
+                <button class="btn btn-approve" style="flex:1;" onclick="handleApprovePolicyEnforcement('${data.event_id}', 'APPROVE')">✓ Approve Enforcement</button>
+                <button class="btn btn-reject" style="flex:1;" onclick="handleApprovePolicyEnforcement('${data.event_id}', 'REJECT')">✕ Reject Change</button>
+              </div>
+            </div>
+          `;
+        } else {
+          controlsDiv.innerHTML = `
+            <div style="font-size:0.75rem; color:var(--text-muted); display:flex; justify-content:space-between;">
+              <span>Enforcement Status: <strong style="color:white;">${data.human_review_status}</strong></span>
+              ${data.human_reviewer_id ? `<span>Reviewer: <strong>${data.human_reviewer_id}</strong></span>` : ''}
+            </div>
+          `;
+        }
+
+        document.getElementById('evolution-modal').style.display = 'flex';
+      } catch (err) {
+        console.error('Error viewing evolution detail:', err);
+      }
+    }
+
+    function closeEvolutionModal() {
+      document.getElementById('evolution-modal').style.display = 'none';
+    }
+
+    async function handleApprovePolicyEnforcement(eventId, action) {
+      const commentsInput = document.getElementById('evo-approval-comments');
+      const comments = commentsInput ? commentsInput.value : 'Reviewed by Administrator';
+      try {
+        const res = await fetch('/api/policy-evolution/approve-enforcement', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            event_id: eventId,
+            reviewer_id: 'CISO-Admin',
+            action: action,
+            comments: comments
+          })
+        });
+        const result = await res.json();
+        alert(`Policy Enforcement Status Updated: ${result.human_review_status}`);
+        closeEvolutionModal();
+        loadPolicyEvolutionData();
+      } catch (err) {
+        console.error('Error approving enforcement:', err);
+      }
+    }
+
+    // Initial load
+    updateLiveSignals();
+    fetchPolicies();
+    fetch('/api/health').then(r => r.json()).then(d => {
+      if (d.provider) {
+        const pName = typeof d.provider === 'object' ? d.provider.name : d.provider;
+        document.getElementById('provider-pill').innerText = 'IBM Granite 7B — ' + pName;
+      }
+    }).catch(e => console.error(e));
+    handleGovern();
+  </script>
+</body>
+</html>
