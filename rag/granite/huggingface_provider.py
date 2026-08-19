@@ -21,11 +21,11 @@ class HuggingFaceProvider(LLMProvider):
         self,
         api_key: str = '',
         base_url: str = 'https://router.huggingface.co/v1',
-        model: str = 'ibm-granite/granite-7b-instruct:featherless-ai'
+        model: str = 'ibm-granite/granite-3.0-8b-instruct'
     ):
         self.api_key = api_key
         self.base_url = base_url.rstrip('/') if base_url else 'https://router.huggingface.co/v1'
-        self.model = model or 'ibm-granite/granite-7b-instruct:featherless-ai'
+        self.model = model or 'ibm-granite/granite-3.0-8b-instruct'
 
         if self.is_configured():
             logger.info(f"[LLM] Granite provider initialized with base_url={self.base_url}, model={self.model}")

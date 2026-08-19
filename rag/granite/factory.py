@@ -29,7 +29,7 @@ def get_llm_provider(mode_override: Optional[str] = None) -> LLMProvider:
 
     token = (getattr(settings, 'hf_token', '') if settings else '') or os.getenv('HF_TOKEN', '')
     router_url = (getattr(settings, 'hf_router_url', '') if settings else '') or os.getenv('HF_ROUTER_URL', 'https://router.huggingface.co/v1')
-    model = (getattr(settings, 'hf_model', '') if settings else '') or os.getenv('HF_MODEL', 'ibm-granite/granite-7b-instruct:featherless-ai')
+    model = (getattr(settings, 'hf_model', '') if settings else '') or os.getenv('HF_MODEL', 'ibm-granite/granite-3.0-8b-instruct')
 
     mode = (mode_override or (getattr(settings, 'llm_provider', '') if settings else None) or os.getenv('LLM_PROVIDER') or 'auto').lower()
 

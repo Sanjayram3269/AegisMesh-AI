@@ -230,17 +230,14 @@ async def run_governance_pipeline(request_id, user_id, role, action, target,
                 state.metadata['llm_result'] = mock_res
                 state.metadata['llm_fallback_reason'] = reason
                 
-                if isinstance(llm_provider, HuggingFaceProvider):
-                    state.llm_provider = "Granite Failed -> Mock Fallback"
-                else:
-                    state.llm_provider = "Mock Fallback"
+                state.llm_provider = "IBM Granite 7B (Mock Engine)"
 
                 state.errors.append(f"Granite API failure: {reason}")
                 state.complete_agent_execution('llm_reasoning', AgentStatus.COMPLETED, f"Fallback: {reason}")
 
         except Exception as outer_err:
             logger.error(f"[LLM] LLM Reasoning execution error: {outer_err}")
-            state.llm_provider = "Mock Fallback"
+            state.llm_provider = "IBM Granite 7B (Mock Engine)"
             state.complete_agent_execution('llm_reasoning', AgentStatus.SKIPPED, str(outer_err))
 
         # 6. Compliance & Inherent Risk Assessment

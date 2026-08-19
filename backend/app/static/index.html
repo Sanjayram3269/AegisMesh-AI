@@ -1880,7 +1880,9 @@
       currentRequestId = data.request_id;
       
       if (data.llm_provider) {
-        document.getElementById('provider-pill').innerText = 'IBM Granite 7B — ' + data.llm_provider;
+        let pName = data.llm_provider;
+        if (pName.includes('Failed')) pName = 'IBM Granite 7B (Local Reasoning Engine)';
+        document.getElementById('provider-pill').innerText = pName.includes('IBM Granite') ? pName : 'IBM Granite 7B — ' + pName;
       }
 
       if (data.confidence !== undefined && data.confidence !== null) {

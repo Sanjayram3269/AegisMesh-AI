@@ -20,7 +20,7 @@ class Settings(BaseSettings):
     llm_provider: str = 'huggingface'
     hf_token: str = ''
     hf_router_url: str = 'https://router.huggingface.co/v1'
-    hf_model: str = 'ibm-granite/granite-7b-instruct:featherless-ai'
+    hf_model: str = 'ibm-granite/granite-3.0-8b-instruct'
     llm_allow_mock_fallback: bool = True
 
     # Database
