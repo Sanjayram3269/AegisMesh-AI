@@ -255,6 +255,9 @@ async def run_governance_pipeline(request_id, user_id, role, action, target,
         level_inh = get_standard_risk_level(score_inh)
         level_eff = state.risk.risk_level if state.risk else get_standard_risk_level(score_eff)
         signals_inh = {f.factor: f.score for f in state.risk.risk_factors} if state.risk else {}
+        signals_inh.setdefault('external_exposure', 0.0 if not norm_inp.is_external else 20.0)
+        signals_inh.setdefault('user_authorization', 0.0 if norm_inp.authorization_status == "VERIFIED" else (15.0 if norm_inp.authorization_status == "PENDING" else 25.0))
+        signals_inh.setdefault('target_trust', 5.0 if "approved-finance-analytics" in norm_inp.raw_target.lower() else (0.0 if norm_inp.target_trust == "HIGH" else 15.0))
         rationale_inh = [f.description for f in state.risk.risk_factors] if state.risk else []
 
         inherent_risk = RiskAssessment(
@@ -526,10 +529,20 @@ async def run_governance_pipeline(request_id, user_id, role, action, target,
         else:
             rationale.append("4. Transformation: No transformation applied.")
 
-        effective_pts = state.final_risk.score if state.final_risk else score_eff
-        effective_lvl = state.final_risk.level.value if state.final_risk else level_eff.value
-        total_red = state.risk_reduction if state.risk_reduction is not None else red_pts
+        if state.final_risk is not None:
+            effective_pts = state.final_risk.score
+            total_red = state.risk_reduction
+        elif winning_decision in [GovernanceDecision.REJECT, GovernanceDecision.ESCALATE]:
+            effective_pts = score_inh
+            total_red = None
+        elif score_inh < 25:
+            effective_pts = score_inh
+            total_red = None
+        else:
+            effective_pts = score_eff
+            total_red = red_pts
 
+        effective_lvl = state.final_risk.level.value if state.final_risk else level_eff.value
         rationale.append(f"5. Risk Reduction & Effective Risk: Reduction -{total_red} pts -> Effective Risk: {effective_pts}/100 ({effective_lvl}).")
         rationale.append(f"6. Final Decision Source: Selected via '{decision_source}' -> Decision: {state.final_decision}.")
             

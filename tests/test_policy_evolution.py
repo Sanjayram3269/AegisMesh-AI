@@ -242,17 +242,20 @@ def test_9_sqlite_persistence_and_version_control():
         # Create test policy
         pid = "POL-TEST-EVO-01"
         existing = policy_service.get_policy_by_id(db, pid)
-        if not existing:
-            created = policy_service.create_policy(db, PolicyCreate(
-                policy_id=pid,
-                name="Test Evolution Policy",
-                description="Initial test policy description",
-                rule_definition="Initial rule criteria for testing",
-                decision_action="APPROVE",
-                priority="MEDIUM",
-                status="ACTIVE"
-            ))
-            assert created.version == 1
+        if existing:
+            db.delete(existing)
+            db.commit()
+
+        created = policy_service.create_policy(db, PolicyCreate(
+            policy_id=pid,
+            name="Test Evolution Policy",
+            description="Initial test policy description",
+            rule_definition="Initial rule criteria for testing",
+            decision_action="APPROVE",
+            priority="MEDIUM",
+            status="ACTIVE"
+        ))
+        assert created.version == 1
 
         # Edit rule definition
         new_text = "TEST EVOLUTION CHANGE: All high-risk actions require mandatory CISO review and audit evidence."

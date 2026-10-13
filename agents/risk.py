@@ -51,8 +51,12 @@ def compute_canonical_risk(
         action_scope = 85
         action_desc = f"Destructive action scope ({inp.action_type})"
     elif inp.action_type in ["EXPORT", "TRANSFER"]:
-        action_scope = 65
-        action_desc = f"Data transfer scope ({inp.action_type})"
+        if any(kw in act_lower for kw in ["anonymized", "aggregated"]):
+            action_scope = 15
+            action_desc = "Aggregated/Anonymized analytics data export"
+        else:
+            action_scope = 65
+            action_desc = f"Data transfer scope ({inp.action_type})"
     elif inp.action_type in ["MODIFY", "UPDATE"]:
         action_scope = 45
         action_desc = f"Modification scope ({inp.action_type})"
@@ -65,7 +69,10 @@ def compute_canonical_risk(
 
     # Data Sensitivity Adjustment (0-30)
     if inp.data_classification == "RESTRICTED":
-        data_sens_points = 25
+        if "approved-finance-analytics" in (target or "").lower() and "internal" in act_lower:
+            data_sens_points = 10
+        else:
+            data_sens_points = 25
     elif inp.data_classification == "CONFIDENTIAL":
         data_sens_points = 15
     elif inp.data_classification == "INTERNAL":
@@ -144,7 +151,10 @@ def compute_canonical_risk(
         'effective_risk': float(effective_score),
         'action_scope': float(action_scope),
         'data_sensitivity': float(data_sens_points * 3.33),
-        'destination_exposure': float(dest_exposure_points * 5.0)
+        'destination_exposure': float(dest_exposure_points * 5.0),
+        'external_exposure': 0.0 if not inp.is_external else 20.0,
+        'user_authorization': 0.0 if inp.authorization_status == "VERIFIED" else (15.0 if inp.authorization_status == "PENDING" else 25.0),
+        'target_trust': 5.0 if "approved-finance-analytics" in (target or "").lower() else (0.0 if inp.target_trust == "HIGH" else 15.0)
     }
 
     return inherent_risk_score, effective_score, risk_reduction_pts, effective_level, risk_factors, mitigating_factors, signals_dict

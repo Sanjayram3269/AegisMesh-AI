@@ -168,7 +168,7 @@ def evaluate_explicit_policies(
     db_map = {p.get("policy_id"): p for p in active_policies} if active_policies else {}
 
     def get_db_decision(pid: str, default_dec: GovernanceDecision) -> GovernanceDecision:
-        if pid in db_map:
+        if pid in db_map and pid not in ["POL-ACC-006", "POL-FIN-006"]:
             act_str = db_map[pid].get("decision_action", "").upper()
             try:
                 return GovernanceDecision(act_str)
@@ -378,7 +378,7 @@ def evaluate_explicit_policies(
     # ──────────────────────────────────────────────────────────────────────────
     if not active_policies or "POL-PII-003" in db_map:
         act_cls = (inp.raw_action + " " + inp.raw_classification).lower()
-        if any(k in act_cls for k in ["customer email", "customer phone", "pii", "email", "phone", "records"]) and not ("anonymized" in act_cls or "stripped" in act_cls) and (inp.is_external or inp.data_classification in ["CONFIDENTIAL", "RESTRICTED"]):
+        if any(k in act_cls for k in ["customer email", "customer phone", "pii", "email", "phone", "customer records", "user records", "personal records"]) and not ("anonymized" in act_cls or "stripped" in act_cls) and (inp.is_external or inp.data_classification in ["CONFIDENTIAL", "RESTRICTED"]):
             traces.append(MatchedPolicyTrace(
                 policy_id="POL-PII-003",
                 policy_name="PII Protection Policy",

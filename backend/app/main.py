@@ -16,7 +16,7 @@ if project_root not in sys.path:
 from app.config.settings import get_settings
 from app.database.db import init_db, SessionLocal
 from app.services.policy_service import seed_default_policies
-from app.api import health, govern, audit, review, policies, policy_evolution
+from app.api import health, govern, audit, review, policies, policy_evolution, cyberforge
 
 # Configure logging
 logging.basicConfig(
@@ -76,6 +76,7 @@ app.include_router(audit.router, prefix='/api', tags=['Audit'])
 app.include_router(review.router, prefix='/api', tags=['Human Review'])
 app.include_router(policies.router, prefix='/api', tags=['Policies'])
 app.include_router(policy_evolution.router)
+app.include_router(cyberforge.router, prefix='/api/cyberforge', tags=['CyberForge Security Intelligence'])
 
 @app.get('/', response_class=FileResponse)
 async def serve_dashboard():
@@ -87,8 +88,9 @@ async def serve_dashboard():
 @app.get('/api')
 async def api_info():
     return {
-        'name': 'AegisMesh AI',
-        'description': 'Agentic AI Governance Control Plane',
+        'name': 'CyberForge (AegisMesh AI)',
+        'description': 'Runtime AI Security & Policy Intelligence Platform',
         'docs': '/docs',
-        'health': '/api/health'
+        'health': '/api/health',
+        'cyberforge': '/api/cyberforge/overview'
     }
