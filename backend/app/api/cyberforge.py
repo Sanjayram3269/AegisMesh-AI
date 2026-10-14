@@ -11,6 +11,7 @@ Provides comprehensive endpoints for:
 - Tool Registry & Provider Settings
 """
 
+from dataclasses import asdict
 from datetime import datetime, timezone
 import json
 import logging
@@ -27,6 +28,8 @@ from agents.enforcement.canonical_action import CanonicalAction, PrincipalIdenti
 from agents.enforcement.tools import TOOL_REGISTRY, get_total_side_effect_count, get_tool
 from agents.enforcement.approvals import APPROVAL_MANAGER, ApprovalStatus, ApprovalError
 from agents.enforcement.tamper_audit import AUDIT_LEDGER
+from agents.enforcement.identity_registry import AUTHORITATIVE_DIRECTORY, IDENTITY_SERVICE
+from agents.enforcement.infrastructure_state import INFRASTRUCTURE_STORE
 from agents.adversarial.scenarios import (
     SCENARIOS, AttackCategory, AttackSeverity, get_all_scenarios, get_scenario_by_id
 )
@@ -51,7 +54,7 @@ router = APIRouter(prefix="", tags=["CyberForge Security Intelligence"])
 
 class RunScenarioRequest(BaseModel):
     scenario_id: str
-    mode: str = "RUNTIME_ENFORCEMENT"  # BASELINE_NO_ENFORCEMENT, GOVERNANCE_DETECTION_ONLY, RUNTIME_ENFORCEMENT, RUNTIME_HARDENED
+    mode: str = "RUNTIME_ENFORCEMENT"
 
 
 class BenchmarkRunRequest(BaseModel):
@@ -77,9 +80,16 @@ class ApprovalReviewRequest(BaseModel):
     comments: Optional[str] = ""
 
 
+class ApprovalRevocationRequest(BaseModel):
+    reviewer_id: str
+    reviewer_role: str
+    reason: Optional[str] = "Revoked by security administrator"
+
+
 class ExecuteActionRequest(BaseModel):
     user_id: str
-    role: str
+    auth_token: Optional[str] = None
+    role: Optional[str] = None
     tool_name: str
     operation: str = "EXECUTE"
     target: str
@@ -152,8 +162,8 @@ def execute_protected_action(req: ExecuteActionRequest):
         action_id=f"ACT-API-{datetime.now(timezone.utc).strftime('%H%M%S%f')[:10]}",
         principal=PrincipalIdentity(
             user_id=req.user_id,
-            role=req.role,
-            clearance_level="PRIVILEGED" if req.role in ["ADMIN", "CISO", "FINANCE_MANAGER"] else "STANDARD"
+            role=req.role or "",
+            authorization_token=req.auth_token,
         ),
         tool_name=req.tool_name,
         tool_version="1.0.0",
@@ -383,6 +393,58 @@ def review_approval(approval_id: str, req: ApprovalReviewRequest):
         }
     except ApprovalError as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.post("/approvals/{approval_id}/revoke")
+def revoke_approval(approval_id: str, req: ApprovalRevocationRequest):
+    """Revokes an approval token before it can be consumed."""
+    try:
+        revoked = APPROVAL_MANAGER.revoke_approval(
+            approval_id=approval_id,
+            reviewer_id=req.reviewer_id,
+            reviewer_role=req.reviewer_role,
+            reason=req.reason or "Revoked by security administrator",
+        )
+        return {
+            "status": "success",
+            "message": f"Approval '{approval_id}' successfully revoked.",
+            "approval_id": revoked.approval_id,
+            "approval_status": revoked.status.value,
+        }
+    except ApprovalError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# 6b. Simulated Protected Infrastructure (Deterministic Multi-Entity Simulation)
+# ──────────────────────────────────────────────────────────────────────────────
+
+@router.get("/infrastructure/state")
+def get_simulated_infrastructure_state():
+    """Returns current observable state of all 5 simulated infrastructure entities."""
+    return {
+        "status": "success",
+        "entities": INFRASTRUCTURE_STORE.snapshot(),
+    }
+
+
+@router.post("/infrastructure/reset")
+def reset_simulated_infrastructure():
+    """Resets all 5 simulated infrastructure entities to baseline initial state."""
+    INFRASTRUCTURE_STORE.reset()
+    return {
+        "status": "success",
+        "message": "Deterministic simulated infrastructure entities successfully reset.",
+        "entities": INFRASTRUCTURE_STORE.snapshot(),
+    }
+
+
+@router.get("/directory/principals")
+def get_authoritative_directory_principals():
+    """Returns authoritative server-side principals and allowed roles."""
+    return {
+        "principals": [asdict(p) for p in AUTHORITATIVE_DIRECTORY.values()]
+    }
 
 
 # ──────────────────────────────────────────────────────────────────────────────

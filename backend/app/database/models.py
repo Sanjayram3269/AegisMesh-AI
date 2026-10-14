@@ -112,3 +112,49 @@ class DBPolicyChangeEvent(Base):
     
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     created_by = Column(String, default="system")
+
+
+class DBCyberForgeApproval(Base):
+    __tablename__ = "cyberforge_approvals"
+
+    approval_id = Column(String, primary_key=True, index=True)
+    action_digest = Column(String, index=True, nullable=False)
+    action_payload_json = Column(Text, default="{}")
+    principal_user_id = Column(String, index=True, nullable=False)
+    principal_role = Column(String, nullable=False)
+    required_role = Column(String, nullable=False)
+    policy_version = Column(Integer, default=1)
+    created_at = Column(String, nullable=False)
+    expires_at = Column(String, nullable=False)
+    status = Column(String, default="PENDING", index=True)
+    reviewer_id = Column(String, nullable=True)
+    reviewer_comments = Column(Text, nullable=True)
+    reviewed_at = Column(String, nullable=True)
+    signature = Column(String, nullable=False)
+    consumed_at = Column(String, nullable=True)
+    execution_ticket_id = Column(String, nullable=True)
+
+
+class DBCyberForgeAuditLedger(Base):
+    __tablename__ = "cyberforge_audit_ledger"
+
+    entry_id = Column(String, primary_key=True, index=True)
+    index = Column(Integer, nullable=False, index=True)
+    timestamp = Column(String, nullable=False)
+    request_id = Column(String, index=True, nullable=False)
+    execution_id = Column(String, index=True, nullable=False)
+    principal_user_id = Column(String, index=True, nullable=False)
+    principal_role = Column(String, nullable=False)
+    tool_name = Column(String, index=True, nullable=False)
+    action_digest = Column(String, index=True, nullable=False)
+    decision = Column(String, index=True, nullable=False)
+    executed = Column(Boolean, default=False)
+    side_effects_occurred = Column(Boolean, default=False)
+    side_effect_summary = Column(Text, default="")
+    policy_version = Column(Integer, default=1)
+    details_json = Column(Text, default="{}")
+    state_before_json = Column(Text, default="{}")
+    state_after_json = Column(Text, default="{}")
+    prev_hash = Column(String, nullable=False)
+    entry_hash = Column(String, nullable=False)
+    signature = Column(String, nullable=False)

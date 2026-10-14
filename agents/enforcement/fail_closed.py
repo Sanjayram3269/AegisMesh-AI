@@ -13,7 +13,6 @@ from typing import Any, Dict, Optional, Tuple
 
 from app.schemas.governance import GovernanceDecision
 from agents.enforcement.canonical_action import CanonicalAction
-from agents.enforcement.gateway import ENFORCEMENT_GATEWAY, GatewayEnforcementResult
 
 
 logger = logging.getLogger("cyberforge.fail_closed")

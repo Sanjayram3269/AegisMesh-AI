@@ -10,6 +10,9 @@ from datetime import datetime, timezone
 import uuid
 from typing import Any, Callable, Dict, List, Optional, Set
 
+from agents.enforcement.tickets import ExecutionTicket
+from agents.enforcement.infrastructure_state import INFRASTRUCTURE_STORE
+
 
 class DirectExecutionBypassError(PermissionError):
     """Raised when an attempt is made to invoke a protected tool without a valid gateway ticket."""
@@ -122,7 +125,22 @@ class ProtectedToolBase:
         resource_scope: Any,
     ) -> ToolExecutionResult:
         """Internal execution method called ONLY by the gateway after validation."""
-        # Verification that ticket is genuine and non-consumed is performed by the gateway
+        if ticket is None:
+            raise DirectExecutionBypassError(
+                f"SECURITY VIOLATION: Tool '{self.name}' invocation rejected. "
+                f"Direct execution bypass prevented: Missing authoritative ExecutionTicket."
+            )
+        if not hasattr(ticket, "verify"):
+            raise DirectExecutionBypassError(
+                f"SECURITY VIOLATION: Tool '{self.name}' invocation rejected. "
+                f"Forged or invalid execution ticket type."
+            )
+        is_valid, reason = ticket.verify(tool_name=self.name)
+        if not is_valid:
+            raise DirectExecutionBypassError(
+                f"SECURITY VIOLATION: Execution ticket verification failed ({reason}). Action blocked."
+            )
+        ticket.consumed = True
         self.validate_schema(arguments)
         self._execution_count += 1
         return self._do_execute(arguments, ticket, resource_scope)
@@ -521,11 +539,12 @@ class IsolateHostTool(ProtectedToolBase):
         hostname = arguments["hostname"]
         mode = arguments.get("isolation_mode", "FULL")
 
+        infra_res = INFRASTRUCTURE_STORE.isolate_host(hostname=hostname, isolation_mode=mode)
         log_entry = SideEffectLogEntry(
             tool_name=self.name,
             operation="ISOLATE_HOST",
             target=hostname,
-            details={"hostname": hostname, "isolation_mode": mode, "is_reversible": True},
+            details={"hostname": hostname, "isolation_mode": mode, "is_reversible": True, "infra_state": infra_res},
             execution_id=getattr(ticket, "ticket_id", str(uuid.uuid4())),
         )
         self.side_effects.append(log_entry)
@@ -533,7 +552,7 @@ class IsolateHostTool(ProtectedToolBase):
         summary = f"Network isolated host '{hostname}' with mode '{mode}' (Reversible)"
         return ToolExecutionResult(
             success=True,
-            output={"hostname": hostname, "isolated": True, "mode": mode, "reversible": True},
+            output={"hostname": hostname, "isolated": True, "mode": mode, "reversible": True, "infra_result": infra_res},
             side_effects_occurred=True,
             side_effect_summary=summary,
             tool_name=self.name,
@@ -551,7 +570,7 @@ class DisableAccountTool(ProtectedToolBase):
             version="1.0.0",
             required_role="ANALYST",
             data_sensitivity="INTERNAL",
-            allowed_targets=["corp-directory", "identity-provider-main", "azure-ad-prod"],
+            allowed_targets=["corp-directory", "identity-provider-main", "azure-ad-prod", "user_john_doe", "john_doe"],
             schema={
                 "type": "object",
                 "required": ["username", "reason"],
@@ -573,11 +592,12 @@ class DisableAccountTool(ProtectedToolBase):
         username = arguments["username"]
         reason = arguments["reason"]
 
+        infra_res = INFRASTRUCTURE_STORE.disable_user_account(username=username, reason=reason)
         log_entry = SideEffectLogEntry(
             tool_name=self.name,
             operation="DISABLE_ACCOUNT",
             target=username,
-            details={"username": username, "reason": reason, "is_reversible": True},
+            details={"username": username, "reason": reason, "is_reversible": True, "infra_state": infra_res},
             execution_id=getattr(ticket, "ticket_id", str(uuid.uuid4())),
         )
         self.side_effects.append(log_entry)
@@ -585,7 +605,7 @@ class DisableAccountTool(ProtectedToolBase):
         summary = f"Disabled identity account '{username}' (Reason: {reason}) (Reversible)"
         return ToolExecutionResult(
             success=True,
-            output={"username": username, "account_disabled": True, "reversible": True},
+            output={"username": username, "account_disabled": True, "reversible": True, "infra_result": infra_res},
             side_effects_occurred=True,
             side_effect_summary=summary,
             tool_name=self.name,
@@ -625,11 +645,12 @@ class BlockIPTool(ProtectedToolBase):
         ip_addr = arguments["ip_address"]
         direction = arguments.get("direction", "BOTH")
 
+        infra_res = INFRASTRUCTURE_STORE.block_network_destination(destination=ip_addr, direction=direction)
         log_entry = SideEffectLogEntry(
             tool_name=self.name,
             operation="BLOCK_IP",
             target=ip_addr,
-            details={"ip_address": ip_addr, "direction": direction, "is_reversible": True},
+            details={"ip_address": ip_addr, "direction": direction, "is_reversible": True, "infra_state": infra_res},
             execution_id=getattr(ticket, "ticket_id", str(uuid.uuid4())),
         )
         self.side_effects.append(log_entry)
@@ -637,7 +658,109 @@ class BlockIPTool(ProtectedToolBase):
         summary = f"Blocked IP address '{ip_addr}' in perimeter firewall (Direction: {direction})"
         return ToolExecutionResult(
             success=True,
-            output={"ip_address": ip_addr, "traffic_blocked": True, "direction": direction},
+            output={"ip_address": ip_addr, "traffic_blocked": True, "direction": direction, "infra_result": infra_res},
+            side_effects_occurred=True,
+            side_effect_summary=summary,
+            tool_name=self.name,
+            execution_id=getattr(ticket, "ticket_id", ""),
+        )
+
+
+class RestartServiceTool(ProtectedToolBase):
+    """Restarts a high-impact infrastructure service on a designated server."""
+
+    def __init__(self):
+        super().__init__(
+            name="restart_service",
+            description="Restart high-impact infrastructure service on server",
+            version="1.0.0",
+            required_role="ENGINEER",
+            data_sensitivity="RESTRICTED",
+            allowed_targets=["srv-domain-controller-01", "srv-linux-app-02", "staging-api-gateway"],
+            schema={
+                "type": "object",
+                "required": ["service_name", "server_id"],
+                "properties": {
+                    "service_name": {"type": "string"},
+                    "server_id": {"type": "string"},
+                },
+            },
+        )
+
+    def _do_execute(
+        self,
+        arguments: Dict[str, Any],
+        ticket: Any,
+        resource_scope: Any,
+    ) -> ToolExecutionResult:
+        svc = arguments["service_name"]
+        srv = arguments["server_id"]
+
+        infra_res = INFRASTRUCTURE_STORE.restart_service(service_name=svc, server_id=srv)
+        log_entry = SideEffectLogEntry(
+            tool_name=self.name,
+            operation="RESTART_SERVICE",
+            target=srv,
+            details={"service_name": svc, "server_id": srv, "infra_state": infra_res},
+            execution_id=getattr(ticket, "ticket_id", str(uuid.uuid4())),
+        )
+        self.side_effects.append(log_entry)
+
+        summary = f"Restarted service '{svc}' on server '{srv}'"
+        return ToolExecutionResult(
+            success=True,
+            output={"service": svc, "server": srv, "status": "RESTARTED", "infra_result": infra_res},
+            side_effects_occurred=True,
+            side_effect_summary=summary,
+            tool_name=self.name,
+            execution_id=getattr(ticket, "ticket_id", ""),
+        )
+
+
+class DisableServerTool(ProtectedToolBase):
+    """DESTRUCTIVE: Decommissions or powers off a server."""
+
+    def __init__(self):
+        super().__init__(
+            name="disable_server",
+            description="Decommission or disable server infrastructure (Destructive)",
+            version="1.0.0",
+            required_role="CISO",
+            data_sensitivity="RESTRICTED",
+            allowed_targets=["srv-linux-app-02", "staging-api-gateway"],
+            schema={
+                "type": "object",
+                "required": ["server_id", "reason"],
+                "properties": {
+                    "server_id": {"type": "string"},
+                    "reason": {"type": "string"},
+                },
+            },
+        )
+
+    def _do_execute(
+        self,
+        arguments: Dict[str, Any],
+        ticket: Any,
+        resource_scope: Any,
+    ) -> ToolExecutionResult:
+        srv = arguments["server_id"]
+        reason = arguments.get("reason", "")
+
+        infra_res = INFRASTRUCTURE_STORE.disable_critical_server(server_id=srv, reason=reason)
+        log_entry = SideEffectLogEntry(
+            tool_name=self.name,
+            operation="DISABLE_SERVER",
+            target=srv,
+            details={"server_id": srv, "reason": reason, "infra_state": infra_res},
+            execution_id=getattr(ticket, "ticket_id", str(uuid.uuid4())),
+        )
+        self.side_effects.append(log_entry)
+
+        summary = f"Disabled server '{srv}' (Reason: {reason})"
+        return ToolExecutionResult(
+            success=True,
+            output={"server_id": srv, "status": "OFFLINE", "infra_result": infra_res},
             side_effects_occurred=True,
             side_effect_summary=summary,
             tool_name=self.name,
@@ -656,6 +779,8 @@ TOOL_REGISTRY: Dict[str, ProtectedToolBase] = {
     "isolate_host": IsolateHostTool(),
     "disable_account": DisableAccountTool(),
     "block_ip": BlockIPTool(),
+    "restart_service": RestartServiceTool(),
+    "disable_server": DisableServerTool(),
 }
 
 
@@ -666,7 +791,9 @@ def get_tool(name: str) -> Optional[ProtectedToolBase]:
 def reset_all_tool_side_effects():
     for tool in TOOL_REGISTRY.values():
         tool.reset_state()
+    INFRASTRUCTURE_STORE.reset()
 
 
 def get_total_side_effect_count() -> int:
     return sum(tool.side_effect_count for tool in TOOL_REGISTRY.values())
+
