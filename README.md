@@ -221,6 +221,7 @@ AegisMesh now includes a challenge-aligned prototype designed to make security i
 | --- | --- |
 | `GET /api/defense/summary` | Demo-only incident counts and coverage disclosure |
 | `GET /api/defense/incidents` | List grouped incidents; optional `severity`, `status`, and `search` filters |
+| `POST /api/defense/events/ingest` | Accept a normalized JSON alert and group related events by source/type/asset |
 | `POST /api/defense/incidents/{incident_id}/response` | Record a simulated review, support request, or approval request |
 | `POST /api/defense/demo/reset` | Reset the sample incidents |
 
@@ -228,6 +229,9 @@ Example:
 
 ```bash
 curl http://localhost:8000/api/defense/incidents
+curl -X POST http://localhost:8000/api/defense/events/ingest \
+  -H "Content-Type: application/json" \
+  -d '{"event_id":"demo-001","source":"Imported alert","event_type":"suspicious_login","asset":"staff-account-7","description":"Several unusual sign-in attempts were reported.","evidence":["Five failed sign-ins"]}'
 curl -X POST http://localhost:8000/api/defense/incidents/INC-1001/response \
   -H "Content-Type: application/json" \
   -d '{"action":"simulate_containment"}'
