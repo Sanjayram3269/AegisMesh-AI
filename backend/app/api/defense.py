@@ -114,7 +114,7 @@ def get_defense_summary():
 @router.get("/incidents")
 def list_defense_incidents(
     severity: Optional[Literal["low", "medium", "high", "critical"]] = None,
-    status_filter: Optional[Literal["needs_attention", "reviewed", "pending_approval", "contained_simulated", "closed"]] = Query(default=None, alias="status"),
+    status_filter: Optional[Literal["needs_attention", "reviewed", "pending_approval", "pending_support", "contained_simulated", "closed"]] = Query(default=None, alias="status"),
     search: Optional[str] = Query(default=None, max_length=100),
 ):
     """Return deduplicated incident groups with plain-language guidance."""
@@ -142,6 +142,8 @@ def respond_to_incident(incident_id: str, request: ResponseRequest):
         if incident is None:
             raise HTTPException(status_code=404, detail="Incident not found.")
         if request.action == "simulate_containment":
+            if incident["action_kind"] not in ("account_containment", "device_containment"):
+                raise HTTPException(status_code=400, detail="This incident does not support containment in the demo.")
             if incident["requires_approval"]:
                 incident["status"] = "pending_approval"
                 incident["last_action"] = "Containment requested; awaiting authorized approval"
@@ -160,12 +162,14 @@ def respond_to_incident(incident_id: str, request: ResponseRequest):
             incident["last_action"] = "Approval requested; no action executed"
             return {"ok": True, "mode": "SIMULATION", "status": incident["status"],
                     "message": "Approval request recorded in the demo. No action was executed."}
-        if request.action in ("acknowledge", "support_review"):
+        if request.action == "support_review":
+            incident["status"] = "pending_support"
+            incident["last_action"] = request.note or "Support review requested in demo"
+            return {"ok": True, "mode": "SIMULATION", "status": incident["status"],
+                    "message": "Support review request recorded. The incident remains open; the underlying threat is not marked resolved."}
+        if request.action == "acknowledge":
             incident["status"] = "reviewed"
-            incident["last_action"] = request.note or (
-                "Marked reviewed by demo user" if request.action == "acknowledge"
-                else "Support review requested in demo"
-            )
+            incident["last_action"] = request.note or "Marked reviewed by demo user"
             return {"ok": True, "mode": "SIMULATION", "status": incident["status"],
                     "message": "Review recorded in the demo. This does not mean the underlying threat is resolved."}
         raise HTTPException(status_code=400, detail="Unsupported response action.")
