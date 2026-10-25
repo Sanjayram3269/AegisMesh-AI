@@ -8,6 +8,7 @@ AegisMesh should help a non-technical staff member understand security activity,
 
 - A standalone dashboard at `/defense` designed around plain-language incidents.
 - A demo incident API with summary counts, search, severity/status filters, grouped event counts, evidence, confidence labels, recommendations, and explicit limitations.
+- A normalized JSON-alert intake endpoint with deterministic category-to-guidance mapping, idempotency by event ID, and grouping by source/type/asset. This is an import seam, not a live provider integration.
 - Demo actions for acknowledging an incident, requesting support, or requesting approval.
 - High-impact containment requests remain pending approval in the prototype. The prototype does not execute real containment.
 - A visible simulation banner and API disclosure that no live telemetry is connected.
@@ -41,9 +42,10 @@ AegisMesh should help a non-technical staff member understand security activity,
 - [ ] Build and run the frontend/backend locally and perform manual accessibility checks.
 
 ### Phase 2 — Reliable event intake and incident processing
-- [ ] Select one initial integration (for example, imported JSON alerts) and document its schema.
+- [x] Define a normalized JSON alert schema and import endpoint for the prototype.
+- [ ] Connect an authenticated real provider or ingestion pipeline.
 - [ ] Validate and normalize untrusted events; preserve original evidence and source metadata.
-- [ ] Add persistent incident/event storage and deduplication keys.
+- [ ] Replace in-memory prototype storage with persistent incident/event storage and durable deduplication keys.
 - [ ] Track source health, coverage, freshness, and ingestion failures.
 - [ ] Add tests for malformed, duplicate, stale, conflicting, and incomplete events.
 
@@ -64,7 +66,7 @@ AegisMesh should help a non-technical staff member understand security activity,
 
 - Seeded incidents and all response state changes in the current prototype are simulations.
 - A grouped count demonstrates the interface, not a validated production correlation algorithm.
-- The current prototype does not connect to email, identity, endpoint, firewall, SIEM, or cloud control-plane systems.
+- The current prototype accepts normalized JSON alerts through an API, but does not connect to email, identity, endpoint, firewall, SIEM, or cloud control-plane systems.
 - Marking an incident reviewed is not equivalent to resolving the threat.
 - A pending approval is not an executed action.
 - The existing attack-blocking benchmark applies only to its documented test scenarios. It does not establish universal prevention or real-world detection accuracy.
