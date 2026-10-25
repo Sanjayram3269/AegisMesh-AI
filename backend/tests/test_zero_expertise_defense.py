@@ -83,3 +83,41 @@ def test_support_request_keeps_incident_open():
 def test_containment_is_rejected_for_non_containment_incident():
     response = client.post("/api/defense/incidents/INC-1002/response", json={"action": "simulate_containment"})
     assert response.status_code == 400
+
+ 
+def test_imported_events_are_normalized_and_duplicate_ids_are_idempotent():
+    payload = {
+        "event_id": "event-demo-001",
+        "source": "Imported identity alert",
+        "event_type": "suspicious_login",
+        "asset": "staff-account-7",
+        "description": "Several sign-in attempts were reported for this account.",
+        "evidence": ["Five failed sign-ins", "New location"],
+    }
+    first = client.post("/api/defense/events/ingest", json=payload)
+    assert first.status_code == 200
+    assert first.json()["duplicate"] is False
+    incident_id = first.json()["incident_id"]
+
+    duplicate = client.post("/api/defense/events/ingest", json=payload)
+    assert duplicate.status_code == 200
+    assert duplicate.json()["duplicate"] is True
+    assert duplicate.json()["incident_id"] == incident_id
+
+
+def test_related_imported_events_are_grouped():
+    base = {
+        "source": "Imported endpoint alert",
+        "event_type": "malware_alert",
+        "asset": "WS-DEMO-9",
+        "description": "A suspicious process was reported by the endpoint tool.",
+        "evidence": ["Suspicious process signal"],
+    }
+    first = client.post("/api/defense/events/ingest", json={"event_id": "endpoint-001", **base})
+    second = client.post("/api/defense/events/ingest", json={"event_id": "endpoint-002", **base})
+    assert first.status_code == 200
+    assert second.status_code == 200
+    assert second.json()["grouped"] is True
+    assert second.json()["incident_id"] == first.json()["incident_id"]
+    incident = next(i for i in client.get("/api/defense/incidents").json()["incidents"] if i["id"] == first.json()["incident_id"])
+    assert incident["event_count"] == 2
