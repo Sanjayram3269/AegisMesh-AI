@@ -84,11 +84,112 @@ def _seed_incidents() -> dict[str, dict]:
 
 
 _INCIDENTS = _seed_incidents()
+_INGESTED_EVENT_IDS: set[str] = set()
+_IMPORTED_COUNTER = 0
 
 
 class ResponseRequest(BaseModel):
     action: Literal["acknowledge", "request_approval", "simulate_containment", "support_review"]
     note: Optional[str] = Field(default=None, max_length=500)
+
+
+class SecurityEventIngestRequest(BaseModel):
+    """Normalized alert supplied by a user or connector; not raw log ingestion."""
+    event_id: str = Field(min_length=1, max_length=120)
+    source: str = Field(min_length=1, max_length=120)
+    event_type: Literal["suspicious_login", "phishing_email", "malware_alert", "configuration_change", "unknown"]
+    asset: str = Field(min_length=1, max_length=160)
+    description: str = Field(min_length=8, max_length=1200)
+    evidence: list[str] = Field(default_factory=list, max_length=12)
+    occurred_at: Optional[datetime] = None
+
+
+@router.post("/events/ingest")
+def ingest_normalized_security_event(event: SecurityEventIngestRequest):
+    """Ingest one normalized alert, group duplicates by source/type/asset, and give guidance.
+
+    This is an integration seam for imported alerts. It does not connect to a live
+    provider, inspect raw logs, or independently establish that an alert is true.
+    """
+    global _IMPORTED_COUNTER
+    with _lock:
+        if event.event_id in _INGESTED_EVENT_IDS:
+            existing = next((i for i in _INCIDENTS.values() if event.event_id in i.get("event_ids", [])), None)
+            return {"ok": True, "duplicate": True, "mode": "SIMULATION",
+                    "incident_id": existing["id"] if existing else None,
+                    "message": "This event ID was already ingested; no duplicate incident was created."}
+
+        mapping = {
+            "suspicious_login": {
+                "category": "Account access", "severity": "high", "confidence": "medium",
+                "title": "Unusual sign-in activity needs review",
+                "why": "If the activity was not expected, someone else may be trying to access this account.",
+                "recommendation": "Confirm the activity with the account owner using a trusted contact method. Request authorized containment if they do not recognize it.",
+                "action_kind": "account_containment", "requires_approval": True,
+            },
+            "phishing_email": {
+                "category": "Suspicious email", "severity": "medium", "confidence": "medium",
+                "title": "An email may be trying to steal information",
+                "why": "The message may be attempting to trick someone into sharing a password or opening an unsafe link.",
+                "recommendation": "Do not click links or open attachments. Ask the designated support person to review the message.",
+                "action_kind": "review", "requires_approval": False,
+            },
+            "malware_alert": {
+                "category": "Device alert", "severity": "high", "confidence": "medium",
+                "title": "A device security alert needs review",
+                "why": "If the alert is genuine, the device may put organization information or other systems at risk.",
+                "recommendation": "Contact the designated support person and avoid sensitive work on the affected device until checked.",
+                "action_kind": "device_containment", "requires_approval": True,
+            },
+            "configuration_change": {
+                "category": "System change", "severity": "medium", "confidence": "low",
+                "title": "A system setting changed",
+                "why": "An unexpected change may weaken protection or interrupt a service, but this event alone does not prove malicious activity.",
+                "recommendation": "Verify who made the change and whether it was planned before taking corrective action.",
+                "action_kind": "support_review", "requires_approval": True,
+            },
+            "unknown": {
+                "category": "Other alert", "severity": "low", "confidence": "low",
+                "title": "A security alert needs human review",
+                "why": "The event type is not recognized, so the system cannot safely infer its impact.",
+                "recommendation": "Review the original evidence with the designated support person. No automated containment is recommended.",
+                "action_kind": "support_review", "requires_approval": True,
+            },
+        }
+        rule = mapping[event.event_type]
+        group_key = "|".join((event.source.casefold().strip(), event.event_type, event.asset.casefold().strip()))
+        existing = next((i for i in _INCIDENTS.values() if i.get("group_key") == group_key), None)
+        occurred = (event.occurred_at or datetime.now(timezone.utc)).astimezone(timezone.utc).isoformat()
+        event_evidence = [item.strip() for item in event.evidence if item.strip()]
+        if existing:
+            existing["event_count"] += 1
+            existing.setdefault("event_ids", []).append(event.event_id)
+            existing["evidence"] = list(dict.fromkeys(existing["evidence"] + event_evidence))[:12]
+            existing["occurred_at"] = max(existing["occurred_at"], occurred)
+            _INGESTED_EVENT_IDS.add(event.event_id)
+            return {"ok": True, "duplicate": False, "grouped": True, "mode": "SIMULATION",
+                    "incident_id": existing["id"], "event_count": existing["event_count"],
+                    "message": "Related event added to the existing incident group."}
+
+        _IMPORTED_COUNTER += 1
+        incident_id = f"INC-IMPORT-{_IMPORTED_COUNTER:04d}"
+        _INCIDENTS[incident_id] = {
+            "id": incident_id, "title": rule["title"], "category": rule["category"],
+            "severity": rule["severity"], "confidence": rule["confidence"],
+            "status": "needs_attention", "source": event.source, "asset": event.asset,
+            "organization": "Imported event demo", "occurred_at": occurred,
+            "event_count": 1, "group_key": group_key, "event_ids": [event.event_id],
+            "what_happened": event.description, "why_it_matters": rule["why"],
+            "evidence": event_evidence or ["No additional evidence was supplied with this event."],
+            "recommended_action": rule["recommendation"],
+            "action_label": "Request review", "action_kind": rule["action_kind"],
+            "requires_approval": rule["requires_approval"], "last_action": None,
+            "limitations": "Imported alert data; source authenticity and event accuracy have not been independently verified.",
+        }
+        _INGESTED_EVENT_IDS.add(event.event_id)
+        return {"ok": True, "duplicate": False, "grouped": False, "mode": "SIMULATION",
+                "incident_id": incident_id, "event_count": 1,
+                "message": "Normalized alert added as a new incident. Review its source and evidence."}
 
 
 @router.get("/summary")
@@ -178,7 +279,9 @@ def respond_to_incident(incident_id: str, request: ResponseRequest):
 @router.post("/demo/reset")
 def reset_defense_demo():
     """Reset demo incidents to their seeded state."""
-    global _INCIDENTS
+    global _INCIDENTS, _IMPORTED_COUNTER
     with _lock:
         _INCIDENTS = _seed_incidents()
+        _INGESTED_EVENT_IDS.clear()
+        _IMPORTED_COUNTER = 0
         return {"ok": True, "mode": "SIMULATION", "message": "Demo incidents reset.", "incident_count": len(_INCIDENTS)}
