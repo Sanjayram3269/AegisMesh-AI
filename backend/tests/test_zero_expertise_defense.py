@@ -71,3 +71,15 @@ def test_reset_restores_seed_incidents():
     body = client.get("/api/defense/incidents").json()
     incident = next(i for i in body["incidents"] if i["id"] == "INC-1002")
     assert incident["status"] == "needs_attention"
+
+
+def test_support_request_keeps_incident_open():
+    response = client.post("/api/defense/incidents/INC-1003/response", json={"action": "support_review"})
+    assert response.status_code == 200
+    assert response.json()["status"] == "pending_support"
+    assert "remains open" in response.json()["message"]
+
+
+def test_containment_is_rejected_for_non_containment_incident():
+    response = client.post("/api/defense/incidents/INC-1002/response", json={"action": "simulate_containment"})
+    assert response.status_code == 400
