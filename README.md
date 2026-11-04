@@ -201,6 +201,50 @@ for mode in [ExecutionMode.BASELINE_NO_ENFORCEMENT, ExecutionMode.GOVERNANCE_DET
 2. **Deterministic Simulation**: All protected targets (domain controllers, workstations, firewall ACLs) are simulated in memory/SQLite to prevent destructive operations on host hardware.
 3. **Single-Node Concurrency**: Approval locking currently uses Python thread locks and SQLite transactions. Multi-node distributed deployments require distributed locks (e.g. Redis Redlock).
 
+
+---
+
+## 🧭 Zero-Expertise Cyber Defense (Challenge Prototype)
+
+AegisMesh now includes a challenge-aligned prototype designed to make security incidents understandable to staff without cybersecurity expertise.
+
+- **Dashboard:** open `http://localhost:8000/defense` after starting the FastAPI server.
+- **Plain-language incident cards:** what happened, why it matters, evidence, urgency, and a recommended next step.
+- **Noise reduction demonstration:** related events are represented as grouped incident records, with search and severity/status filters.
+- **Guided response:** review, support escalation, and approval-request actions are demonstrated in the UI.
+- **Safe action boundary:** high-impact demo actions remain pending approval rather than executing.
+- **Honest status reporting:** the interface visibly states that the data is simulated and no live security sources are connected.
+
+### Prototype API
+
+| Endpoint | Purpose |
+| --- | --- |
+| `GET /api/defense/summary` | Demo-only incident counts and coverage disclosure |
+| `GET /api/defense/incidents` | List grouped incidents; optional `severity`, `status`, and `search` filters |
+| `POST /api/defense/events/ingest` | Accept a normalized JSON alert and group related events by source/type/asset |
+| `POST /api/defense/incidents/{incident_id}/response` | Record a simulated review, support request, or approval request |
+| `POST /api/defense/demo/reset` | Reset the sample incidents |
+
+Example:
+
+```bash
+curl http://localhost:8000/api/defense/incidents
+curl -X POST http://localhost:8000/api/defense/events/ingest \
+  -H "Content-Type: application/json" \
+  -d '{"event_id":"demo-001","source":"Imported alert","event_type":"suspicious_login","asset":"staff-account-7","description":"Several unusual sign-in attempts were reported.","evidence":["Five failed sign-ins"]}'
+curl -X POST http://localhost:8000/api/defense/incidents/INC-1001/response \
+  -H "Content-Type: application/json" \
+  -d '{"action":"simulate_containment"}'
+```
+
+### Important scope and limitations
+
+This is a **simulation-only prototype**. The seeded events are not live detections; grouped counts demonstrate incident presentation rather than a validated production correlation engine. Response actions update demo state only and do not isolate devices, disable accounts, quarantine email, or change network controls. No live email, identity, endpoint, or SIEM integration is included. Production use requires authenticated and authorized APIs, real event-source connectors, tenant isolation, durable incident storage, verified integrations, and usability/security evaluation with representative non-technical users.
+
+The existing runtime enforcement benchmark remains limited to its documented scenario set. It is not a claim of universal cyberattack prevention or real-world threat-detection accuracy.
+
+See [ZERO_EXPERTISE_CYBER_DEFENSE.md](docs/ZERO_EXPERTISE_CYBER_DEFENSE.md) for the acceptance criteria and implementation roadmap.
+
 ---
 
 ## 📜 License

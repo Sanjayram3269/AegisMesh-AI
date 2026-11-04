@@ -16,7 +16,7 @@ if project_root not in sys.path:
 from app.config.settings import get_settings
 from app.database.db import init_db, SessionLocal
 from app.services.policy_service import seed_default_policies
-from app.api import health, govern, audit, review, policies, policy_evolution, cyberforge
+from app.api import health, govern, audit, review, policies, policy_evolution, cyberforge, defense
 
 # Configure logging
 logging.basicConfig(
@@ -77,6 +77,7 @@ app.include_router(review.router, prefix='/api', tags=['Human Review'])
 app.include_router(policies.router, prefix='/api', tags=['Policies'])
 app.include_router(policy_evolution.router)
 app.include_router(cyberforge.router, prefix='/api/cyberforge', tags=['CyberForge Security Intelligence'])
+app.include_router(defense.router, prefix='/api')
 
 @app.get('/', response_class=FileResponse)
 async def serve_dashboard():
@@ -85,11 +86,17 @@ async def serve_dashboard():
         return FileResponse(static_file)
     return FileResponse(os.path.join(project_root, 'backend', 'app', 'static', 'index.html'))
 
+@app.get('/defense', response_class=FileResponse)
+async def serve_zero_expertise_dashboard():
+    """Serve the challenge-aligned zero-expertise cyber defense prototype."""
+    static_file = os.path.join(os.path.dirname(__file__), 'static', 'zero-defense.html')
+    return FileResponse(static_file)
+
 @app.get('/api')
 async def api_info():
     return {
         'name': 'CyberForge (AegisMesh AI)',
-        'description': 'Runtime AI Security & Policy Intelligence Platform',
+        'description': 'Zero-Expertise Cyber Defense prototype with a deterministic runtime enforcement foundation',
         'docs': '/docs',
         'health': '/api/health',
         'cyberforge': '/api/cyberforge/overview'
