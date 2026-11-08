@@ -46,6 +46,12 @@ Personal fields `customer_name`, `email`, `phone` and `address` require separate
 
 The browser fetches downloads with bearer authorization and creates a local Blob; tokens are never placed in download URLs.
 
+## Live stage telemetry
+
+`POST /api/ops/runs` creates an authenticated, single-use observation channel for `chat`, `propose`, `execute` or `review`. Send its ID in `X-Aegis-Run` on the matching operation, and poll `GET /api/ops/runs/{id}` for actual emitted stage events. Each trace is bound to its creating account; an ID cannot be reused for a second operation or a different operation type.
+
+Telemetry is ephemeral, single-process and bounded to 200 recent traces with a ten-minute cleanup window. It is not an authorization source or a durable replacement for the execution ledger. Messages exclude customer contacts, request credentials and model API keys. The visualization identifies the model planner separately from deterministic identity, policy, risk, execution and audit stages. Replaying a captured trace invokes no business endpoint.
+
 ## Durability and integration constraints
 
 SQLite transactions atomically couple business changes, ticket consumption, approvals and audit records. A failed transaction does not leave an export or consume an approval. Successful proposals are single-use. Proposals and approvals expire after 15 minutes.

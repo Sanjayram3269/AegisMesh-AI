@@ -1,0 +1,30 @@
+{
+  "passed": true,
+  "checks": [
+    "overview at 1500px",
+    "assistant at 1500px",
+    "approvals at 1500px",
+    "activity at 1500px",
+    "policies at 1500px",
+    "checks at 1500px",
+    "overview at 1024px",
+    "assistant at 1024px",
+    "approvals at 1024px",
+    "activity at 1024px",
+    "policies at 1024px",
+    "checks at 1024px",
+    "overview at 390px",
+    "assistant at 390px",
+    "approvals at 390px",
+    "activity at 390px",
+    "policies at 390px",
+    "checks at 390px",
+    "command navigation",
+    "keyboard selection of all six stages",
+    "motion control",
+    "usable stage controls without WebGL"
+  ],
+  "javascript_errors": [],
+  "scope": "Six pages at desktop, tablet and mobile widths; actual WebGL and accessible fallback.",
+  "recorded_at": "2026-11-08T22:15:38.837260+00:00"
+}

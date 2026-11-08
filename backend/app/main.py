@@ -1,45 +1,60 @@
 """AegisMesh AI — Backend API Server"""
 
 import logging
-import sys
 import os
+import sys
 from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 
 # Add project root to path for agent/rag imports
-project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
+from app.api import (
+    audit,
+    cyberforge,
+    defense,
+    govern,
+    health,
+    policies,
+    policy_evolution,
+    review,
+)
 from app.config.settings import get_settings
-from app.database.db import init_db, SessionLocal
+from app.database.db import SessionLocal, init_db
 from app.services.policy_service import seed_default_policies
-from app.api import health, govern, audit, review, policies, policy_evolution, cyberforge, defense
 
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s | %(name)-25s | %(levelname)-7s | %(message)s',
-    datefmt='%H:%M:%S'
+    format="%(asctime)s | %(name)-25s | %(levelname)-7s | %(message)s",
+    datefmt="%H:%M:%S",
 )
-logger = logging.getLogger('aegismesh')
+logger = logging.getLogger("aegismesh")
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     settings = get_settings()
-    logger.info('=' * 60)
-    logger.info('  AegisMesh AI — Agentic Governance Control Plane')
-    logger.info('=' * 60)
-    logger.info(f'  Environment:  {settings.app_env}')
-    logger.info(f'  Demo Mode:    {settings.demo_mode}')
+    logger.info("=" * 60)
+    logger.info("  AegisMesh AI — Agentic Governance Control Plane")
+    logger.info("=" * 60)
+    logger.info(f"  Environment:  {settings.app_env}")
+    logger.info(f"  Demo Mode:    {settings.demo_mode}")
     from app.operations.provider import status as planner_status
-    logger.info(f'  Operations planner: {planner_status()["provider"]} / {planner_status().get("model", "unconfigured")}')
-    logger.info(f'  Legacy governance provider setting: {settings.llm_provider}')
-    logger.info(f'  Database:     {settings.database_url}')
-    logger.info('=' * 60)
-    
+
+    logger.info(
+        f"  Operations planner: {planner_status()['provider']} / {planner_status().get('model', 'unconfigured')}"
+    )
+    logger.info(f"  Legacy governance provider setting: {settings.llm_provider}")
+    logger.info(f"  Database:     {settings.database_url}")
+    logger.info("=" * 60)
+
     # Initialize DB & Seed Baseline Policies
     try:
         init_db()
@@ -52,12 +67,13 @@ async def lifespan(app: FastAPI):
         logger.error(f"Error initializing DB / policies: {err}")
 
     yield
-    logger.info('AegisMesh AI shutting down.')
+    logger.info("AegisMesh AI shutting down.")
+
 
 app = FastAPI(
-    title='AegisMesh AI',
-    description='Agentic AI Governance Control Plane — Evaluates AI actions before execution.',
-    version='0.1.0',
+    title="AegisMesh AI",
+    description="Agentic AI Governance Control Plane — Evaluates AI actions before execution.",
+    version="0.1.0",
     lifespan=lifespan,
 )
 
@@ -67,47 +83,63 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins,
     allow_credentials=True,
-    allow_methods=['*'],
-    allow_headers=['*'],
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # Routes
-app.include_router(health.router, prefix='/api', tags=['Health'])
-app.include_router(govern.router, prefix='/api', tags=['Governance'])
-app.include_router(audit.router, prefix='/api', tags=['Audit'])
-app.include_router(review.router, prefix='/api', tags=['Human Review'])
-app.include_router(policies.router, prefix='/api', tags=['Policies'])
+app.include_router(health.router, prefix="/api", tags=["Health"])
+app.include_router(govern.router, prefix="/api", tags=["Governance"])
+app.include_router(audit.router, prefix="/api", tags=["Audit"])
+app.include_router(review.router, prefix="/api", tags=["Human Review"])
+app.include_router(policies.router, prefix="/api", tags=["Policies"])
 app.include_router(policy_evolution.router)
-app.include_router(cyberforge.router, prefix='/api/cyberforge', tags=['CyberForge Security Intelligence'])
-app.include_router(defense.router, prefix='/api')
+app.include_router(
+    cyberforge.router,
+    prefix="/api/cyberforge",
+    tags=["CyberForge Security Intelligence"],
+)
+app.include_router(defense.router, prefix="/api")
 
 from app.operations.api import install, operations
-install(app)
 
-@app.get('/', response_class=FileResponse)
+install(app)
+app.mount(
+    "/assets",
+    StaticFiles(directory=os.path.join(os.path.dirname(__file__), "static", "assets")),
+    name="assets",
+)
+
+
+@app.get("/", response_class=FileResponse)
 async def serve_dashboard():
     operations()  # Initialize local credentials and durable workspace on first visit.
-    static_file = os.path.join(os.path.dirname(__file__), 'static', 'operations.html')
+    static_file = os.path.join(os.path.dirname(__file__), "static", "operations.html")
     if os.path.exists(static_file):
-        return FileResponse(static_file)
-    return FileResponse(os.path.join(project_root, 'backend', 'app', 'static', 'index.html'))
+        return FileResponse(static_file, headers={"Cache-Control": "no-cache"})
+    return FileResponse(
+        os.path.join(project_root, "backend", "app", "static", "index.html")
+    )
 
-@app.get('/lab', response_class=FileResponse)
+
+@app.get("/lab", response_class=FileResponse)
 async def serve_legacy_lab():
-    return FileResponse(os.path.join(os.path.dirname(__file__), 'static', 'index.html'))
+    return FileResponse(os.path.join(os.path.dirname(__file__), "static", "index.html"))
 
-@app.get('/defense', response_class=FileResponse)
+
+@app.get("/defense", response_class=FileResponse)
 async def serve_zero_expertise_dashboard():
     """Serve the challenge-aligned zero-expertise cyber defense prototype."""
-    static_file = os.path.join(os.path.dirname(__file__), 'static', 'zero-defense.html')
+    static_file = os.path.join(os.path.dirname(__file__), "static", "zero-defense.html")
     return FileResponse(static_file)
 
-@app.get('/api')
+
+@app.get("/api")
 async def api_info():
     return {
-        'name': 'CyberForge (AegisMesh AI)',
-        'description': 'Zero-Expertise Cyber Defense prototype with a deterministic runtime enforcement foundation',
-        'docs': '/docs',
-        'health': '/api/health',
-        'cyberforge': '/api/cyberforge/overview'
+        "name": "CyberForge (AegisMesh AI)",
+        "description": "Zero-Expertise Cyber Defense prototype with a deterministic runtime enforcement foundation",
+        "docs": "/docs",
+        "health": "/api/health",
+        "cyberforge": "/api/cyberforge/overview",
     }

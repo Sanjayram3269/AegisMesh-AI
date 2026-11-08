@@ -1,6 +1,10 @@
 {
   "browser": "Chromium",
   "checks": [
+    "WebGL scene rendered",
+    "3D object selection",
+    "server-emitted stage telemetry",
+    "ledger filtering and receipt inspection",
     "agent login",
     "actual ticket update",
     "separate manager login",
@@ -18,5 +22,6 @@
     "no JavaScript errors"
   ],
   "passed": true,
-  "screenshots": ".local\\live-browser-results"
+  "recorded_at": "2026-11-08T22:15:38.837260+00:00",
+  "scope": "Live Groq-backed local server; actual Chromium workflow."
 }

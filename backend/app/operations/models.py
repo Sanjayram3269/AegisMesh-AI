@@ -1,4 +1,5 @@
 from typing import Literal
+
 from pydantic import BaseModel, ConfigDict, Field
 
 
@@ -38,6 +39,10 @@ class LoginRequest(StrictModel):
 class ReviewRequest(StrictModel):
     decision: Literal["APPROVED", "REJECTED", "REVOKED"]
     comment: str = Field(default="", max_length=500)
+
+
+class LiveRunRequest(StrictModel):
+    operation: Literal["chat", "propose", "execute", "review"]
 
 
 SAFE_FIELDS = ["ticket_id", "category", "status", "resolution_hours"]
