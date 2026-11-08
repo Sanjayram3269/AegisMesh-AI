@@ -4,7 +4,9 @@
 
 A working AI operations assistant with policy-grounded proposals, authenticated human approvals, and verified execution. Built with Codex, extending the submitted **Agentic AI Governance & Runtime Security Control Plane**.
 
-![AegisMesh support operations workspace](docs/images/workspace.png)
+The flagship console uses a dark navy/violet interface and an interactive WebGL agent mesh. Select a rendered stage to inspect its authority and latest observation. During a request, real server events drive processing states; trace playback is explicitly labelled and never executes another business action. The workspace, approval queue, searchable execution ledger, policy registry and adversarial lab share the same live runtime view.
+
+![AegisMesh interactive 3D agent console](docs/images/overview.png)
 
 ## The problem and the first use case
 
@@ -17,6 +19,7 @@ AegisMesh demonstrates a concrete approach: let the assistant propose work, then
 | Capability | Observable result |
 | --- | --- |
 | Natural-language assistant | Groq or OpenAI returns a strict-schema proposal; the server validates it. |
+| Interactive 3D agent mesh | Real WebGL rendering, object selection, stage inspection and authenticated server telemetry. One model planner and five deterministic control stages are identified honestly. |
 | Ticket review | Operational fields are read from SQLite; personal contact fields are excluded. |
 | Scoped ticket update | The database is updated and a separate SELECT verifies the new status. |
 | Minimized report | An actual CSV is stored, read back, hashed, and downloadable by its requester. |
@@ -36,7 +39,6 @@ Requires Python 3.11+; tested on Windows with Python 3.12. The showcase uses the
 ```powershell
 git clone https://github.com/Sanjayram3269/AegisMesh-AI.git
 cd AegisMesh-AI
-git checkout codex/showcase-operations
 .\start-showcase.ps1
 ```
 
@@ -109,8 +111,9 @@ python -m pip install -r requirements-dev.txt
 python -m pytest tests backend/tests -q
 ```
 
-- **145 tests passed** in a freshly created Python 3.12 virtual environment. Includes actual DB/file checks, separate reviewer authorization, tampering, replay, concurrent approval use, restart persistence and transaction rollback. Tests use isolated temporary databases.
+- **150 tests passed** in a Python 3.12 virtual environment. Includes actual DB/file checks, separate reviewer authorization, tampering, replay, concurrent approval use, restart persistence, transaction rollback and trace ownership/lifecycle. Tests use isolated temporary databases.
 - A real Chromium walkthrough passed login, update, approval, CSV download, external destination denial, argument tampering, replay denial, audit verification, refresh persistence and mobile layout checks. [Reproduction instructions](docs/VERIFICATION.md).
+- The redesigned console additionally passed WebGL rendering and actual 3D-object selection, all six pages at 1500px/1024px/390px widths, keyboard navigation, reduced-motion controls and an accessible no-WebGL fallback.
 - The Docker image built successfully and passed the same real-browser workflow against its non-root Linux runtime in offline mode.
 - The final live Groq planning check passed **7/7 handcrafted cases in one run**, with approximately **1.60 seconds median planner latency**. This is a small development evaluation, not a general accuracy or attack-prevention claim. [Raw final results](docs/evidence/planner-final.json).
 - Initial runs and the schema/prompt iteration are also preserved. [Evaluation details](docs/VERIFICATION.md).

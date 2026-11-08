@@ -8,14 +8,16 @@ import json
 import secrets
 import time
 import uuid
+
 from agents.enforcement.canonical_action import (
     CanonicalAction,
     PrincipalIdentity,
     ResourceScope,
 )
-from .models import Action, SAFE_FIELDS, evaluate, evidence
-from .store import Store, compact, now
 
+from .live import emit
+from .models import SAFE_FIELDS, Action, evaluate, evidence
+from .store import Store, compact, now
 
 POLICY_VERSION = 1
 
@@ -40,7 +42,14 @@ class Operations:
 
     def propose(self, user, action, explanation, provider):
         proposal_id = "PROP-" + uuid.uuid4().hex[:16]
+        emit(
+            "policy",
+            "running",
+            "Retrieving the versioned rules applicable to this tool.",
+        )
         decision, risk, reason = evaluate(action, user["role"])
+        emit("policy", "complete", f"Applicable rules evaluated: {decision}.")
+        emit("risk", "complete", f"Deterministic policy risk: {risk}/100. {reason}")
         with self.store.transaction() as db:
             db.execute(
                 "INSERT INTO proposals VALUES(?,?,?,?,?,?,?)",
@@ -72,6 +81,11 @@ class Operations:
         }
 
     def record(self, db, user, result):
+        emit(
+            "audit",
+            "running",
+            "Writing the receipt and hash-chain link in the business transaction.",
+        )
         result["id"] = "RUN-" + uuid.uuid4().hex[:16]
         result["created_at"] = now()
         result["audit_hash"] = self.store.append_audit(
@@ -106,7 +120,18 @@ class Operations:
             action = override or original
             canonical = self.canonical(user, action)
             action_digest = canonical.compute_digest()
+            emit(
+                "policy",
+                "running",
+                "Revalidating the exact tool, arguments, destination and current policy.",
+            )
             decision, risk, reason = evaluate(action, user["role"])
+            emit(
+                "policy",
+                "complete",
+                "Current server-side rules evaluated; approval checks still apply.",
+            )
+            emit("risk", "complete", f"Policy risk evaluated at {risk}/100.")
             result = {
                 "proposal_id": proposal_id,
                 "requester": user["username"],
@@ -190,6 +215,11 @@ class Operations:
                 )
                 result["approval_id"] = approval_id
             if decision == "ALLOW":
+                emit(
+                    "execution",
+                    "running",
+                    "Authorizing the exact action with a signed, single-use ticket.",
+                )
                 # A single-use ticket is consumed in the same SQLite transaction as the tool.
                 ticket_id = "TKT-" + secrets.token_hex(12)
                 ticket = {

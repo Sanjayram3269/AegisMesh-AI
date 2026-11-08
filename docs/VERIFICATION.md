@@ -35,6 +35,8 @@ python scripts/browser_smoke.py --url http://127.0.0.1:8765 --data-dir .local/br
 
 The same walkthrough was also run against the live Groq-backed server. It checks agent sign-in, a real ticket update, separate manager sign-in, approval, CSV download, external destination blocking, argument tampering, replay rejection, audit verification, policy evidence, persistence after refresh, a 390px mobile viewport and JavaScript errors. Screenshots under `docs/images/` show the actual interface.
 
+The flagship redesign additionally verifies a real WebGL context, selecting a rendered 3D object through raycasting, and server-emitted stage events during protected execution. `scripts/verify_console.py` captures all six pages at 1500px, 1024px and 390px, checks horizontal overflow, keyboard stage selection and command navigation, and verifies motion controls and an explicitly labelled non-WebGL fallback. Live progress is polled from authenticated observation channels; fast stages may appear as completed events, not artificially delayed processing.
+
 ## Live planning checks
 
 ```bash

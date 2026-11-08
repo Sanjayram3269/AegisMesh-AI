@@ -46,3 +46,4 @@ jobs:
               raise SystemExit('Server did not start')
           PY
           python scripts/browser_smoke.py --data-dir .local/browser-ci
+          python scripts/verify_console.py --data-dir .local/browser-ci --output .local/console-review

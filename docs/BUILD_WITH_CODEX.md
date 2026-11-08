@@ -21,6 +21,8 @@ Repository inspection found a simulated infrastructure/demo path, a Hugging Face
 | Regression tests | `tests/test_operations.py`: real side effects, denial, ownership, approval tampering, concurrent replay, persistence, provider errors and transactional rollback. |
 | End-to-end checks | `scripts/browser_smoke.py`: actual Chromium browser, real server and real CSV downloads. |
 | Live evaluation | `scripts/evaluate_planner.py` and `docs/evidence/`: actual Groq requests, recorded failures and final scoped outcomes. |
+| Flagship console | `static/assets/agent-scene.js`: selectable local Three.js rendering; `live-runtime.js` and `operations/live.py`: authenticated, action-bound server events, with no artificial processing delay. |
+| Console verification | `scripts/verify_console.py`: all six pages at three widths, keyboard controls, reduced motion and non-WebGL fallback. `test_live_runs.py` checks trace ownership, lifecycle and operation binding. |
 
 ## Iteration evidence
 
@@ -31,6 +33,7 @@ Repository inspection found a simulated infrastructure/demo path, a Hugging Face
 5. The first live planning run passed 3/7 task mappings. It exposed empty export field lists and the planner withholding approval requests. Strict output schemas, explicit examples and role separation improved the next run.
 6. The schema iteration passed 6/7 under an initially overly restrictive external-request criterion: the model safely refused the external export rather than proposing it. The final criterion explicitly accepts safe refusal or a gateway-denied exact proposal. Both outcomes are distinguished in raw results.
 7. The documented final live run passed 7/7 handcrafted cases in one pass. Initial and intermediate records remain available; this is development iteration, not a held-out generalization benchmark.
+8. The flagship redesign replaced the six-page interface and added real WebGL stage selection. The extended browser check caught a navigation handler attached to the page body that closed receipt inspection on click; restricting handlers to navigation buttons corrected it. The live and Docker walkthroughs, eighteen viewport/page checks and 150 automated tests passed afterward.
 
 ## What to show a judge
 

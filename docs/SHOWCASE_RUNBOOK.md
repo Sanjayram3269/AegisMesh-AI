@@ -9,7 +9,7 @@ Initial user: a small customer-support team. Business tasks: reviewing tickets, 
 ## Before presenting
 
 1. Launch `start-showcase.ps1`. Keep the terminal and the local credentials available privately. Open `http://127.0.0.1:8000` and sign in as the agent.
-2. Confirm the banner identifies Groq and the selected model. Send one request to check access. Never display `.env` or the credential file while screen sharing.
+2. Confirm the sidebar identifies Groq and the selected model. Open **AI workspace** and send one request to check access. Never display `.env` or the credential file while screen sharing.
 3. If ticket 101 is already resolved, ask to **reopen ticket 101** and confirm it before starting. Historical audit records can remain; do not reset evidence to imply it never happened.
 4. Prepare a separate manager session through the Approvals authentication button. Explain that this is a controlled demonstration of two distinct accounts; in a deployment they belong to different people.
 5. Test the internet connection. Record a full working walkthrough beforehand. If the live provider fails, identify the failure and show the recording; offline mode must be labelled explicitly.
@@ -21,7 +21,7 @@ Initial user: a small customer-support team. Business tasks: reviewing tickets, 
 | Time | Screen/action | What to say |
 | --- | --- | --- |
 | 0:00–0:40 | One problem slide | “A support team wants an assistant that can update records and prepare reports. A plausible AI answer is not permission to expose customer information.” |
-| 0:40–1:10 | Workspace | “AegisMesh sits between the model's proposal and the business tool. This is a live controlled lab with fictional customers and real database actions.” |
+| 0:40–1:10 | Agent overview → select a 3D stage → AI workspace | “These six stages show real server events: one model planner and five deterministic controls. AegisMesh sits between the proposal and the business tool. This is a live controlled lab with fictional customers and real database actions.” |
 | 1:10–1:55 | Ask “Resolve ticket 101”; inspect and confirm | “The request is scoped to one ticket. The gateway checks policy, the database changes, and an independent read verifies the result.” |
 | 1:55–2:45 | Ask “Export a customer report including email and phone”; request approval | “Personal fields require a separate manager. At this point no report has been generated.” Show fields, destination, rule and digest. |
 | 2:45–3:30 | Manager approves; use “Test changed destination” | “Approval belongs to the exact action. Changing its destination does not inherit permission.” Show the blocked receipt. |
@@ -34,6 +34,8 @@ Initial user: a small customer-support team. Business tasks: reviewing tickets, 
 | 7:35–8:00 | Close and buffer | “You saw useful work succeed, altered work fail, and a real result verified. That is accountable automation.” |
 
 ## Six-slide structure
+
+The 3D mesh follows actual request events; a quick stage can finish between polling updates. Click a stage to inspect its role, then **Inspect event stream** for timestamps. **Replay trace** replays recorded observations and never executes another action. Avoid spending demo time rotating the scene; use the visuals to explain the execution boundary.
 
 1. Customer, task and concrete risk.
 2. AegisMesh promise; move immediately to the product.

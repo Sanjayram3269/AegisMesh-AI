@@ -1,15 +1,19 @@
 from functools import lru_cache
 from typing import Annotated
+
 from fastapi import APIRouter, Depends, Header, HTTPException, Response
+
+from .live import JOURNAL, emit, trace
 from .models import (
+    POLICIES,
     Action,
     ChatRequest,
     ExecuteRequest,
+    LiveRunRequest,
     LoginRequest,
     ReviewRequest,
-    POLICIES,
 )
-from .provider import plan, status, ProviderUnavailable
+from .provider import ProviderUnavailable, plan, status
 from .service import Operations
 
 router = APIRouter(prefix="/ops", tags=["Working operations assistant"])
@@ -79,52 +83,127 @@ def context(ticket_id: int, user=Depends(current_user)):
 
 
 @router.post("/chat")
-async def chat(body: ChatRequest, user=Depends(current_user)):
+async def chat(
+    body: ChatRequest,
+    user=Depends(current_user),
+    x_aegis_run: str | None = Header(default=None),
+):
     if user["role"] == "auditor":
         raise HTTPException(403, "Auditors have read-only activity access.")
-    ticket = context(body.ticket_context_id, user) if body.ticket_context_id else None
-    try:
-        result, provider = await plan(body.message, ticket)
-    except ProviderUnavailable as e:
-        raise HTTPException(503, str(e)) from None
-    proposal = (
-        operations().propose(user, result.action, result.explanation, provider)
-        if result.action
-        else None
-    )
-    return {
-        "explanation": result.explanation,
-        "proposal": proposal,
-        "provider": provider,
-        "context_used": ticket,
-        "executed": False,
-    }
+    with trace(x_aegis_run, user, "chat"):
+        ticket = (
+            context(body.ticket_context_id, user) if body.ticket_context_id else None
+        )
+        emit(
+            "intent",
+            "running",
+            "Interpreting the request; awaiting the configured planner.",
+        )
+        try:
+            result, provider = await plan(body.message, ticket)
+        except ProviderUnavailable as e:
+            emit("intent", "error", "Planner unavailable. No action was proposed.")
+            raise HTTPException(503, str(e)) from None
+        emit(
+            "intent",
+            "complete",
+            "Structured planner output validated. No operation has executed.",
+        )
+        proposal = (
+            operations().propose(user, result.action, result.explanation, provider)
+            if result.action
+            else None
+        )
+        return {
+            "explanation": result.explanation,
+            "proposal": proposal,
+            "provider": provider,
+            "context_used": ticket,
+            "executed": False,
+        }
+
+
+@router.post("/runs")
+def create_run(body: LiveRunRequest, user=Depends(current_user)):
+    return JOURNAL.create(user, body.operation)
+
+
+@router.get("/runs/{run_id}")
+def read_run(run_id: str, user=Depends(current_user)):
+    return JOURNAL.read(run_id, user)
 
 
 @router.post("/proposals")
-def propose(body: Action, user=Depends(current_user)):
+def propose(
+    body: Action,
+    user=Depends(current_user),
+    x_aegis_run: str | None = Header(default=None),
+):
     """Explicit tool-call test seam; uses the identical policy and executor path."""
-    return operations().propose(
-        user,
-        body,
-        "Explicit tool-call proposal; no model was invoked.",
-        {
-            "provider": "explicit_tool_call",
-            "live_llm": False,
-            "latency_ms": 0,
-            "usage": None,
-        },
-    )
+    with trace(x_aegis_run, user, "propose"):
+        return operations().propose(
+            user,
+            body,
+            "Explicit tool-call proposal; no model was invoked.",
+            {
+                "provider": "explicit_tool_call",
+                "live_llm": False,
+                "latency_ms": 0,
+                "usage": None,
+            },
+        )
 
 
 @router.post("/execute")
-def execute(body: ExecuteRequest, user=Depends(current_user)):
-    return operations().execute(user, body.proposal_id, body.action, body.approval_id)
+def execute(
+    body: ExecuteRequest,
+    user=Depends(current_user),
+    x_aegis_run: str | None = Header(default=None),
+):
+    with trace(x_aegis_run, user, "execute"):
+        result = operations().execute(
+            user, body.proposal_id, body.action, body.approval_id
+        )
+        emit(
+            "audit",
+            "complete",
+            "Execution receipt and audit link committed to storage.",
+        )
+        emit(
+            "execution",
+            "complete"
+            if result["verified"]
+            else "waiting"
+            if result["decision"] == "REQUIRE_APPROVAL"
+            else "blocked",
+            "Business result verified and committed."
+            if result["verified"]
+            else result["reason"],
+        )
+        return result
 
 
 @router.post("/approvals/{approval_id}/review")
-def review(approval_id: str, body: ReviewRequest, user=Depends(manager)):
-    return operations().review(user, approval_id, body.decision, body.comment)
+def review(
+    approval_id: str,
+    body: ReviewRequest,
+    user=Depends(manager),
+    x_aegis_run: str | None = Header(default=None),
+):
+    with trace(x_aegis_run, user, "review"):
+        emit(
+            "execution",
+            "running",
+            "Checking separate reviewer authorization and approval state.",
+        )
+        result = operations().review(user, approval_id, body.decision, body.comment)
+        emit(
+            "execution",
+            "waiting" if body.decision == "APPROVED" else "blocked",
+            "Manager decision recorded. No business operation was executed.",
+        )
+        emit("audit", "complete", "Review event committed to the audit chain.")
+        return result
 
 
 @router.get("/exports/{export_id}")
