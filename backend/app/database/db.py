@@ -1,13 +1,16 @@
 """SQLite Database Connection & Session Management."""
 
 import os
+from pathlib import Path
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 from .models import Base
 
 # Database file location
-DB_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "aegismesh.db"))
-DATABASE_URL = f"sqlite:///{DB_PATH}"
+data_directory = Path(os.getenv("AEGIS_DATA_DIR") or Path(__file__).resolve().parents[3] / ".local")
+data_directory.mkdir(parents=True, exist_ok=True)
+DB_PATH = str((data_directory / "legacy.db").resolve())
+DATABASE_URL = os.getenv("DATABASE_URL", f"sqlite:///{DB_PATH}")
 
 engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

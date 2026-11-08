@@ -1,41 +1,17 @@
-version: '3.8'
-
 services:
-  backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
+  aegismesh:
+    build: .
     ports:
-      - "8000:8000"
-    env_file:
-      - .env
+      - "127.0.0.1:8000:8000"
+    env_file: .env
     volumes:
-      - ./backend:/app
-      - ./agents:/app/agents
-      - ./rag:/app/rag
-      - sqlite-data:/app/data
-    depends_on: []
+      - aegis-data:/app/.local
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/ops/status')"]
       interval: 30s
-      timeout: 10s
+      timeout: 5s
       retries: 3
 
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    ports:
-      - "5173:5173"
-    environment:
-      - VITE_API_URL=http://localhost:8000
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
-    depends_on:
-      - backend
-    restart: unless-stopped
-
 volumes:
-  sqlite-data:
+  aegis-data:

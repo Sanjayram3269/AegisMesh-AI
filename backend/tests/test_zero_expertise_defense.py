@@ -9,6 +9,11 @@ from fastapi.testclient import TestClient
 from backend.app.main import app
 
 client = TestClient(app)
+from app.operations.api import operations
+import json
+credentials = json.loads((operations().store.directory / "credentials.json").read_text())
+login = client.post("/api/ops/login", json=credentials["manager"])
+client.headers["Authorization"] = "Bearer " + login.json()["token"]
 
 
 def setup_function():

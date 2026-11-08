@@ -62,7 +62,7 @@ def canonicalize_arguments(args: Dict[str, Any]) -> Dict[str, Any]:
             ]
         elif isinstance(val, float):
             # Normalize float representation
-            normalized[key] = round(val, 6)
+            normalized[key] = val
         else:
             normalized[key] = val
     return normalized
@@ -109,6 +109,7 @@ class CanonicalAction:
             sort_keys=True,
             separators=(",", ":"),
             ensure_ascii=True,
+            allow_nan=False,
         )
 
     def compute_digest(self) -> str:

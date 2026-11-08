@@ -1,6 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script>
+    // This historical console only accesses simulated infrastructure. Workspace
+    // manager authentication is still required for every legacy API request.
+    const originalFetch = window.fetch.bind(window);
+    window.fetch = function(input, init = {}) {
+      const path = typeof input === 'string' ? input : input.url;
+      if (path.startsWith('/api/')) {
+        const token = sessionStorage.getItem('aegis_manager_token') || sessionStorage.getItem('aegis_token');
+        if (token) {
+          const headers = new Headers(init.headers || {});
+          headers.set('Authorization', 'Bearer ' + token);
+          init = {...init, headers};
+        }
+      }
+      return originalFetch(input, init);
+    };
+  </script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AegisMesh AI — Agentic AI Governance Control Plane</title>

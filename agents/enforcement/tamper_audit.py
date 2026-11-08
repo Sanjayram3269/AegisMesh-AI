@@ -26,7 +26,8 @@ from typing import Any, Dict, List, Optional, Tuple
 
 logger = logging.getLogger("cyberforge.audit")
 
-AUDIT_HMAC_KEY = os.getenv("CYBERFORGE_AUDIT_KEY", "cyberforge-audit-hmac-key-2026").encode("utf-8")
+from agents.enforcement.key_material import signing_key
+AUDIT_HMAC_KEY = signing_key("CYBERFORGE_AUDIT_KEY")
 GENESIS_HASH = "0" * 64
 
 

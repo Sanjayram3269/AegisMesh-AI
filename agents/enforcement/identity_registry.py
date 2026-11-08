@@ -9,6 +9,8 @@ Enforces:
 
 from dataclasses import dataclass
 import re
+import hmac
+import secrets
 from typing import Dict, Optional, Tuple
 
 
@@ -159,6 +161,12 @@ AUTHORITATIVE_DIRECTORY: Dict[str, AuthoritativePrincipal] = {
     "U_ENG_21": AuthoritativePrincipal("U_ENG_21", "Engineer 21", "ENGINEER", "Engineering", "STANDARD", ("read", "execute"), "tok-21"),
 }
 
+# The scenario directory is a local test identity source, not a public password
+# database. Tokens are process-local secrets and are never returned by an API.
+from dataclasses import replace
+AUTHORITATIVE_DIRECTORY = {key: replace(value, api_token=secrets.token_urlsafe(32))
+                           for key, value in AUTHORITATIVE_DIRECTORY.items()}
+
 
 class AuthoritativeIdentityService:
     """Server-side identity verification engine."""
@@ -168,7 +176,7 @@ class AuthoritativeIdentityService:
         user_id: Optional[str],
         claimed_role: Optional[str] = None,
         auth_token: Optional[str] = None,
-        allow_synthetic_test: bool = True,
+        allow_synthetic_test: bool = False,
     ) -> AuthoritativePrincipal:
         """Authenticates principal and assigns authoritative server-side role and clearance.
         
@@ -222,13 +230,8 @@ class AuthoritativeIdentityService:
                         f"ROLE SPOOFING BLOCKED: Principal '{clean_uid}' with authoritative role '{principal.role}' attempted privilege escalation to '{claimed_role}'. Access denied."
                     )
 
-        # Token verification (if token provided)
-        if auth_token and str(auth_token).strip():
-            clean_tok = str(auth_token).strip()
-            if clean_tok != principal.api_token and not clean_tok.startswith("demo-") and not clean_tok.startswith("cf-"):
-                raise IdentityVerificationError(
-                    f"Authentication failed: Invalid credentials token provided for principal '{clean_uid}'."
-                )
+        if not auth_token or not hmac.compare_digest(str(auth_token), principal.api_token):
+            raise IdentityVerificationError("Authentication failed: Missing or invalid credentials.")
 
         return principal
 

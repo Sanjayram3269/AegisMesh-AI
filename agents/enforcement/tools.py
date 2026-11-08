@@ -8,10 +8,15 @@ the underlying executor or was blocked.
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 import uuid
+import threading
+from dataclasses import replace
 from typing import Any, Callable, Dict, List, Optional, Set
 
 from agents.enforcement.tickets import ExecutionTicket
 from agents.enforcement.infrastructure_state import INFRASTRUCTURE_STORE
+
+_TICKET_LOCK = threading.Lock()
+_CONSUMED_TICKETS = set()
 
 
 class DirectExecutionBypassError(PermissionError):
@@ -123,6 +128,7 @@ class ProtectedToolBase:
         arguments: Dict[str, Any],
         ticket: Any,
         resource_scope: Any,
+        action: Any = None,
     ) -> ToolExecutionResult:
         """Internal execution method called ONLY by the gateway after validation."""
         if ticket is None:
@@ -130,18 +136,19 @@ class ProtectedToolBase:
                 f"SECURITY VIOLATION: Tool '{self.name}' invocation rejected. "
                 f"Direct execution bypass prevented: Missing authoritative ExecutionTicket."
             )
-        if not hasattr(ticket, "verify"):
+        if type(ticket) is not ExecutionTicket or action is None:
             raise DirectExecutionBypassError(
                 f"SECURITY VIOLATION: Tool '{self.name}' invocation rejected. "
                 f"Forged or invalid execution ticket type."
             )
-        is_valid, reason = ticket.verify(tool_name=self.name)
-        if not is_valid:
-            raise DirectExecutionBypassError(
-                f"SECURITY VIOLATION: Execution ticket verification failed ({reason}). Action blocked."
-            )
-        ticket.consumed = True
-        self.validate_schema(arguments)
+        actual_action = replace(action, arguments=arguments, resource_scope=resource_scope, tool_name=self.name)
+        with _TICKET_LOCK:
+            is_valid, reason = ticket.verify(tool_name=self.name, expected_digest=actual_action.compute_digest())
+            if not is_valid or ticket.ticket_id in _CONSUMED_TICKETS:
+                raise DirectExecutionBypassError(f"Execution ticket rejected: {reason}; replay or mismatch.")
+            self.validate_schema(arguments)
+            _CONSUMED_TICKETS.add(ticket.ticket_id)
+            ticket.consumed = True
         self._execution_count += 1
         return self._do_execute(arguments, ticket, resource_scope)
 

@@ -11,9 +11,10 @@ from datetime import datetime, timezone
 import hashlib
 import hmac
 import os
+import secrets
 from typing import Optional, Tuple
 
-GATEWAY_SIGNING_KEY = os.getenv("CYBERFORGE_GATEWAY_KEY", "cyberforge-gateway-ticket-key-2026").encode("utf-8")
+GATEWAY_SIGNING_KEY = os.getenv("CYBERFORGE_GATEWAY_KEY", secrets.token_hex(32)).encode("utf-8")
 
 
 @dataclass

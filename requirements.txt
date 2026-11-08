@@ -1,0 +1,11 @@
+# Lean showcase runtime; optional historical ChromaDB dependencies remain in backend/requirements.txt.
+fastapi>=0.115,<1
+uvicorn>=0.30,<1
+pydantic>=2.9,<3
+pydantic-settings>=2.5,<3
+python-dotenv>=1,<2
+SQLAlchemy>=2.0.35,<3
+httpx>=0.27,<1
+openai>=1,<3
+requests>=2.32,<3
+rich>=13.8,<15

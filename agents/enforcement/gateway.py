@@ -13,6 +13,7 @@ from datetime import datetime, timezone
 import logging
 import time
 import uuid
+import copy
 from typing import Any, Dict, List, Optional, Tuple
 
 from agents.enforcement.canonical_action import CanonicalAction, PrincipalIdentity, ResourceScope
@@ -107,6 +108,7 @@ class RuntimeEnforcementGateway:
         Evaluates, validates, and gates action execution at the physical boundary.
         """
         start_time = time.perf_counter()
+        action = copy.deepcopy(action)
         execution_id = f"EXEC-{uuid.uuid4().hex[:10].upper()}"
         tool_name = action.tool_name
         canonical_digest = action.compute_digest()
@@ -124,7 +126,7 @@ class RuntimeEnforcementGateway:
                     user_id=action.principal.user_id,
                     claimed_role=action.principal.role,
                     auth_token=action.principal.authorization_token,
-                    allow_synthetic_test=True,
+                    allow_synthetic_test=False,
                 )
                 authoritative_role = auth_principal.role
                 authoritative_clearance = auth_principal.clearance_level
@@ -467,6 +469,7 @@ class RuntimeEnforcementGateway:
                 arguments=action.arguments,
                 ticket=ticket,
                 resource_scope=action.resource_scope,
+                action=action,
             )
             ticket.consumed = True
         except Exception as exec_err:
