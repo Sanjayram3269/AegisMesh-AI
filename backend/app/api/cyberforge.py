@@ -23,6 +23,7 @@ from sqlalchemy.orm import Session
 from app.database.db import get_db
 from app.database.models import DBPolicy, DBAuditRecord
 from app.services import policy_service, policy_version_service
+from app.operations.provider import status as operations_provider_status
 from agents.enforcement.gateway import ENFORCEMENT_GATEWAY, GatewayEnforcementResult
 from agents.enforcement.canonical_action import CanonicalAction, PrincipalIdentity, ResourceScope
 from agents.enforcement.tools import TOOL_REGISTRY, get_total_side_effect_count, get_tool
@@ -74,6 +75,7 @@ class RollbackPolicyRequest(BaseModel):
 
 
 class ApprovalReviewRequest(BaseModel):
+    auth_token: Optional[str] = None
     reviewer_id: str
     reviewer_role: str
     decision: str  # "APPROVED" or "REJECTED"
@@ -81,6 +83,7 @@ class ApprovalReviewRequest(BaseModel):
 
 
 class ApprovalRevocationRequest(BaseModel):
+    auth_token: Optional[str] = None
     reviewer_id: str
     reviewer_role: str
     reason: Optional[str] = "Revoked by security administrator"
@@ -125,9 +128,9 @@ def get_security_overview(db: Session = Depends(get_db)):
     )
 
     return {
-        "status": "SECURE",
+        "status": "CONTROLLED_LAB",
         "platform_name": "CyberForge AI Security & Policy Intelligence",
-        "active_environment": "PRODUCTION",
+        "active_environment": "SIMULATED_INFRASTRUCTURE",
         "gateway_status": "ONLINE",
         "fail_closed_mode": True,
         "total_protected_tools": len(TOOL_REGISTRY),
@@ -142,12 +145,8 @@ def get_security_overview(db: Session = Depends(get_db)):
             "total_physical_side_effects": get_total_side_effect_count(),
         },
         "recent_security_events": audit_chain[:5],
-        "provider_status": {
-            "provider_name": "IBM Granite 7B (Enterprise Control Plane)",
-            "health": "OPERATIONAL",
-            "mock_fallback_active": False,
-            "latency_p95_ms": 42.5,
-        }
+        "provider_status": operations_provider_status(),
+        "benchmark_scope": "21 handcrafted scenarios; detection baseline is a keyword heuristic, not an LLM guardrail.",
     }
 
 
@@ -382,7 +381,8 @@ def review_approval(approval_id: str, req: ApprovalReviewRequest):
             reviewer_id=req.reviewer_id,
             reviewer_role=req.reviewer_role,
             decision=req.decision,
-            comments=req.comments or ""
+            comments=req.comments or "",
+            auth_token=req.auth_token,
         )
         return {
             "status": "success",
@@ -404,6 +404,7 @@ def revoke_approval(approval_id: str, req: ApprovalRevocationRequest):
             reviewer_id=req.reviewer_id,
             reviewer_role=req.reviewer_role,
             reason=req.reason or "Revoked by security administrator",
+            auth_token=req.auth_token,
         )
         return {
             "status": "success",
@@ -443,7 +444,7 @@ def reset_simulated_infrastructure():
 def get_authoritative_directory_principals():
     """Returns authoritative server-side principals and allowed roles."""
     return {
-        "principals": [asdict(p) for p in AUTHORITATIVE_DIRECTORY.values()]
+        "principals": [{k: v for k, v in asdict(p).items() if k != "api_token"} for p in AUTHORITATIVE_DIRECTORY.values()]
     }
 
 
@@ -492,15 +493,11 @@ def get_cyberforge_settings():
     """Returns platform configuration, active environment mode, and integration health."""
     return {
         "platform_name": "CyberForge",
-        "app_env": "production",
-        "demo_mode": False,
+        "app_env": "controlled_lab",
+        "demo_mode": True,
         "fail_closed_mode": True,
         "audit_guarantee": "STRICT_FAIL_CLOSED",
-        "llm_provider": {
-            "name": "IBM Granite 7B (Hugging Face Router)",
-            "status": "HEALTHY",
-            "mock_fallback_allowed": False,
-        },
+        "llm_provider": operations_provider_status(),
         "registered_tools_count": len(TOOL_REGISTRY),
         "tamper_resistant_audit": "ENABLED (SHA-256 + HMAC-SHA256)",
     }

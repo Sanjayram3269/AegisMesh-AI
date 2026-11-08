@@ -1,252 +1,142 @@
-# CyberForge: The Runtime Security Layer for Autonomous AI Agents
-*Built on the AegisMesh-AI Governance & Security Platform for the Mitigata CyberForge Challenge*
+# AegisMesh AI
 
-[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-green.svg)](https://fastapi.tiangolo.com/)
-[![Runtime Enforcement](https://img.shields.io/badge/Runtime%20Enforcement-HMAC--SHA--256%20Tickets-emerald.svg)]()
-[![Adversarial Suite](https://img.shields.io/badge/Adversarial%20Lab-21%20Scenarios%20%7C%2013%20Categories-red.svg)]()
-[![Benchmark](https://img.shields.io/badge/Benchmark-100%25%20Attack%20Blocking%20Rate-purple.svg)]()
-[![Tests](https://img.shields.io/badge/Tests-105%2F105%20Passed-brightgreen.svg)]()
-[![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
+### Let AI work. Keep control.
 
-> **Central Security Principle**:  
-> **An AI agent's recommendation is not an authorization decision.** Every protected operation must pass through an authoritative, fail-closed runtime enforcement boundary that validates canonical digests, authoritative server-side identities, and cryptographic execution tickets before any physical side effect occurs.
+A working AI operations assistant with policy-grounded proposals, authenticated human approvals, and verified execution. Built with Codex, extending the submitted **Agentic AI Governance & Runtime Security Control Plane**.
 
----
+![AegisMesh support operations workspace](docs/images/workspace.png)
 
-## 📑 Core Documentation Deliverables
+## The problem and the first use case
 
-| Document | Purpose & Description |
-| :--- | :--- |
-| **[SECURITY_AUDIT.md](SECURITY_AUDIT.md)** | Initial code audit, confirmed vulnerabilities (SEC-VULN-01 to 07), remediation architecture, and residual risk analysis. |
-| **[THREAT_MODEL.md](THREAT_MODEL.md)** | Assets, trust boundaries, attacker capabilities, threat matrix (THR-01 to 12), and explicit limitations. |
-| **[SECURITY_TEST_RESULTS.md](SECURITY_TEST_RESULTS.md)** | Full test execution breakdown across 105 passed test cases, Scenarios A–E, and adversarial test suites. |
-| **[BENCHMARK_RESULTS.json](BENCHMARK_RESULTS.json)** | Machine-generated benchmark evaluation data across all 4 execution modes (162 KB). |
-| **[DEMO_RUNBOOK.md](DEMO_RUNBOOK.md)** | Step-by-step 5-minute live hackathon presentation script covering Scenarios A through E. |
+Small support teams need to review tickets, update records, and prepare customer reports. Giving an assistant unrestricted access can expose customer details or allow an instruction planted in a customer message to trigger an unauthorized action. Reviewing every routine action manually also limits the value of automation.
 
----
+AegisMesh demonstrates a concrete approach: let the assistant propose work, then enforce identity, policy, exact-action approval, execution and verification outside the model. The initial user is a support agent; the reviewer is an operations manager. This is a working reference application, **not a validated customer deployment**.
 
-## 🏛️ System Architecture
+## What actually works
 
-```
-                                      CYBERFORGE RUNTIME ARCHITECTURE
-                                      
-    ┌───────────────────────────┐
-    │      AI Agent             │  (Subject to prompt injection, malicious context,
-    │ (Planner / LLM Reasoning) │   jailbreaks, and compromised outputs)
-    └─────────────┬─────────────┘
-                  │ [Untrusted Proposed Action & Arguments]
-                  ▼
-    ┌───────────────────────────────────────────────────────────┐
-    │          CyberForge Runtime Enforcement Gateway           │
-    │  - Schema Validation & Argument Canonicalization          │
-    │  - Deterministic SHA-256 Canonical Action Digest Binding  │
-    └─────────────┬─────────────────────────────────────────────┘
-                  │
-                  ▼
-    ┌───────────────────────────────────────────────────────────┐
-    │       Identity & Authoritative Policy Evaluation          │
-    │  - Server-Side Identity Directory (Anti-Role Spoofing)    │
-    │  - Multi-Factor Governance & Risk Classification          │
-    │  - Fail-Closed Policy Exception Envelope                  │
-    └─────────────┬─────────────────────────────────────────────┘
-                  │
-                  ▼
-    ┌───────────────────────────────────────────────────────────┐
-    │                Human Approval Verification                │
-    │  - Required for High-Risk & High-Impact Operations        │
-    │  - Bound to Canonical Action Digest, Principal & TTL      │
-    │  - Atomic Single-Use Consumption & Revocation State       │
-    └─────────────┬─────────────────────────────────────────────┘
-                  │ [Issued Single-Use Signed ExecutionTicket]
-                  ▼
-    ┌───────────────────────────────────────────────────────────┐
-    │               Protected Tool Executor Barrier             │
-    │  - Validates Ticket HMAC Signature & Single-Use Status    │
-    │  - Rejects Direct Invocations without Valid Tickets       │
-    │  - Zero Execution on Denied / Escalated Requests          │
-    └─────────────┬─────────────────────────────────────────────┘
-                  │ [Authorized Invocation Only]
-                  ▼
-    ┌───────────────────────────────────────────────────────────┐
-    │                 Simulated Infrastructure                  │
-    │  - Workstations (Normal & Compromised)                    │
-    │  - Critical Domain Controller (`srv-domain-controller-01`)│
-    │  - Enterprise User Accounts & Network ACLs                │
-    │  - Observable State Before & State After Snapshots        │
-    └───────────────────────────────────────────────────────────┘
-                  │
-                  ├───────────────────────────────┐
-                  ▼                               ▼
-    ┌───────────────────────────┐   ┌───────────────────────────┐
-    │   Tamper-Evident Ledger   │   │ Policy Regression Engine  │
-    │ - SHA-256 Hash Chain      │   │ - Pre-deployment Sandbox  │
-    │ - Before/After Snapshots  │   │ - Detects Policy Loosen   │
-    │ - Audit Verification API  │   │ - Blocks Unsafe Changes   │
-    └───────────────────────────┘   └───────────────────────────┘
-```
+| Capability | Observable result |
+| --- | --- |
+| Natural-language assistant | Groq or OpenAI returns a strict-schema proposal; the server validates it. |
+| Ticket review | Operational fields are read from SQLite; personal contact fields are excluded. |
+| Scoped ticket update | The database is updated and a separate SELECT verifies the new status. |
+| Minimized report | An actual CSV is stored, read back, hashed, and downloadable by its requester. |
+| Sensitive report | A different authenticated manager reviews the precise fields and destination. Pending requests have no business side effect. |
+| Safer alternative | A prohibited or sensitive report offers a minimized alternative, which must be proposed and checked afresh. |
+| Tampering and replay | Changed actions and reused proposals/approvals are rejected. Concurrent approval use executes at most once. |
+| Execution evidence | Receipts separate allowed, pending, blocked, executed and verified outcomes. |
+| Durable audit | Business writes, approval consumption, receipts and hash-chain links commit in the same SQLite transaction. A storage failure rolls them back together. |
+| Provider failure | No silent fallback, no action proposal on malformed output, credentials failure or unavailable provider. |
 
----
+**Scope:** this is a live controlled lab using six fictional customer records. Ticket updates and exports are real local operations. There is no production CRM, email, payment, endpoint or cloud integration. No arbitrary SQL, shell commands or outbound export URLs are executed.
 
-## ⚡ Key Security Guarantees & Features
+## Run in five minutes
 
-### 1. Authoritative Physical Execution Barrier
-- **Zero Direct Invocations**: Protected tools (`database_execute`, `customer_data_export`, `cloud_resource_deploy`, `payment_transfer`, `system_config_update`, `external_webhook_call`, `isolate_workstation`, `disable_server`, `restart_service`) cannot be called directly. Invoking `execute_protected()` without a valid, unconsumed `ExecutionTicket` raises `ExecutionBoundaryBypassError`.
-- **Zero Side Effects on Denial**: When an action is denied or requires approval, the executor is never invoked and target infrastructure remains 100% unchanged.
-- **Canonical Action Digest**: All action arguments are recursively sorted and hashed into a canonical SHA-256 digest. Modifying any parameter after authorization invalidates the digest and causes immediate rejection.
+Requires Python 3.11+; tested on Windows with Python 3.12. The showcase uses the lean root requirements. The historical ChromaDB stack is optional and is not required for the new workspace.
 
-### 2. Authoritative Identity & Anti-Role Spoofing
-- **Server-Side Trust Anchor**: Client-supplied role assertions in headers or payloads are strictly cross-checked against `AUTHORITATIVE_DIRECTORY`.
-- **Privilege Escalation Prevention**: Unknown or unmapped user IDs trigger immediate `IdentityVerificationError` and fail closed.
-
-### 3. Cryptographic Human Approval Workflow
-- **Digest-Bound Approvals**: Approvals store the SHA-256 action digest. Mutating action parameters, environment, or target invalidates the approval token.
-- **Atomic Single-Use State Machine**: Approvals transition atomically from `PENDING` → `APPROVED` → `CONSUMED` under thread locks in SQLite, preventing double-spend and concurrent replay attacks.
-- **Revocation Support**: Approvals can be revoked by reviewers prior to execution, immediately blocking execution.
-
-### 4. Fail-Closed Error Handling
-- System dependencies (database, policy engine, AI providers) are wrapped in fail-closed exception envelopes. Any dependency failure strictly results in `DENY`.
-- Sensitive error details (API keys, file paths, stack traces) are automatically masked via `mask_sensitive_error_details`.
-
-### 5. Policy-Change Intelligence
-- Before a proposed policy change is deployed, CyberForge runs the entire 21-scenario adversarial suite in an isolated sandbox against both historical and proposed versions.
-- If a change permits previously blocked attacks or introduces security regressions, deployment is **BLOCKED** automatically.
-
----
-
-## 🏆 Reproducible Benchmark Results
-
-From machine-generated results in `BENCHMARK_RESULTS.json` across 21 standard scenarios (16 attacks, 5 benign controls):
-
-| Metric | 1. Baseline (Unprotected) | 2. Detection-Only (Prompt Guardrails) | 3. CyberForge Runtime Enforcement |
-| :--- | :---: | :---: | :---: |
-| **Attack Scenarios Evaluated** | 16 | 16 | 16 |
-| **Benign Control Scenarios** | 5 | 5 | 5 |
-| **Attacks Successfully Blocked** | 0 / 16 (0.0%) | 6 / 16 (37.5%) | **16 / 16 (100.0%)** |
-| **Unauthorized Action Blocking Rate** | 0.0% | 37.5% | **100.0%** |
-| **Legitimate Action Blocking Rate (FP)** | 0.0% | 0.0% | **0.0%** |
-| **Approval Bypass Attempts Blocked** | 0 / 2 (0.0%) | 0 / 2 (0.0%) | **2 / 2 (100.0%)** |
-| **Approval Replay Attempts Blocked** | 0 / 1 (0.0%) | 0 / 1 (0.0%) | **1 / 1 (100.0%)** |
-| **Executor Bypass Attempts Blocked** | 0 / 2 (0.0%) | 0 / 2 (0.0%) | **2 / 2 (100.0%)** |
-| **Median Execution Latency** | 0.04 ms | 0.03 ms | **0.82 ms** |
-
----
-
-## 🚀 Quickstart & Local Setup
-
-### 1. Installation
-```bash
+```powershell
 git clone https://github.com/Sanjayram3269/AegisMesh-AI.git
 cd AegisMesh-AI
-
-# Create and activate virtual environment
-python3 -m venv .venv
-source .venv/bin/activate
-
-# Install dependencies
-pip install -r requirements.txt
+git checkout codex/showcase-operations
+.\start-showcase.ps1
 ```
 
-### 2. Run the Application
+The launcher creates a virtual environment, installs runtime dependencies on first use, initializes synthetic data, and displays local lab credentials. Open **http://127.0.0.1:8000**. Use the agent account for work and authenticate the manager separately when reviewing approvals. Credentials are randomly generated under `.local/credentials.json`; they are never committed.
+
+Cross-platform setup:
+
 ```bash
+python -m venv .venv
+# Windows: .venv\Scripts\activate; macOS/Linux: source .venv/bin/activate
+python -m pip install -r requirements.txt
+python scripts/setup_showcase.py
 python run_server.py
 ```
-Open **`http://localhost:8000`** in your browser to access the CyberForge Security Console.
 
----
+The server binds to loopback by default. Use `--port 8001` to change ports. Existing workspace data persists between launches.
 
-## 🧪 Testing & Verification
+## Choose a planner
 
-Run the entire test suite (105 tests passing):
-```bash
-.venv/bin/pytest tests/ -v
+Edit the ignored root `.env` file and restart the server:
+
+```dotenv
+AEGIS_PROVIDER=groq
+GROQ_API_KEY=your-local-key
+GROQ_MODEL=openai/gpt-oss-120b
 ```
 
-Run the mandatory security scenarios (Scenarios A–E):
-```bash
-.venv/bin/pytest tests/test_mandatory_security_suite.py -v
+For the OpenAI API, set `AEGIS_PROVIDER=openai`, `OPENAI_API_KEY`, and an account-accessible `OPENAI_MODEL`. OpenAI transport is covered by mocked contract tests; **a live OpenAI API call has not been verified in this build**.
+
+For offline rehearsal, set `AEGIS_PROVIDER=offline`. The UI explicitly labels this as a deterministic command parser with no LLM. In `auto` mode, an available Groq key takes precedence, then OpenAI, otherwise offline. A failed live request never silently switches providers.
+
+The live verification used **Groq serving `openai/gpt-oss-120b`**. That is a Groq API integration using an OpenAI open-weight model; it is not an OpenAI-hosted API call. Codex was used for engineering the application. These are separate claims.
+
+## A three-minute working walkthrough
+
+1. Sign in as the support agent. Ask **“Summarize the support tickets”**. Inspect the action and policy evidence, then confirm it.
+2. Ask **“Resolve ticket 101”**. Confirm; inspect the before/after status and independent database read.
+3. Ask **“Export a customer report including email and phone”**. Request approval. No report exists yet.
+4. Open **Approvals**, authenticate the manager, and approve the exact action. Back as requester, try **Test changed destination**: rejected. The original approval remains available.
+5. Execute the original approved action and download the real CSV. Try **Test approval replay**: rejected.
+6. In **Security checks**, test an external destination and inspect ticket 104's planted instruction. The explicit boundary tests are labelled separately from observed model behavior.
+7. Open **Activity & evidence** to inspect receipts, provider latency, action digest, policy passages and local chain verification. Export the evidence JSON.
+
+![Exact-action approval](docs/images/approval.png)
+
+## Architecture and trust boundary
+
+```mermaid
+flowchart LR
+    U[Authenticated support agent] --> P[Untrusted model planner]
+    P --> S[Strict schema validation]
+    S --> G[Operations gateway]
+    R[Versioned policy pack] --> G
+    M[Different authenticated manager] --> A[Exact-action approval]
+    A --> G
+    G --> T[Signed single-use execution ticket]
+    T --> D[SQLite business tools]
+    D --> V[Independent result verification]
+    V --> E[Receipt and local audit chain]
 ```
 
-Run the reproducible benchmark generator:
-```bash
-PYTHONPATH=.:backend .venv/bin/python3.14 -c "
-from agents.adversarial.benchmark import BENCHMARK_MANAGER
-from agents.adversarial.engine import ExecutionMode
-for mode in [ExecutionMode.BASELINE_NO_ENFORCEMENT, ExecutionMode.GOVERNANCE_DETECTION_ONLY, ExecutionMode.RUNTIME_ENFORCEMENT]:
-    run = BENCHMARK_MANAGER.run_benchmark(mode=mode)
-    print(f'{mode.value:25} -> Block Rate: {1.0 - run.attack_success_rate:.1%}, Latency: {run.median_latency_ms:.2f}ms')
-"
-```
+The new path lives in `backend/app/operations/` and reuses the original canonical-action representation. Its business executor uses transaction-scoped, signed tickets. Policy evidence is retrieved by supported tool scope from a reviewed policy pack; this path **does not use ChromaDB semantic retrieval**. Authorization comes from deterministic server rules, never from model output. Risk scores are a transparent policy rubric, not calibrated probabilities.
 
----
+The historical multi-agent governance pipeline and 21-scenario simulation lab remain in the repository. Legacy `/api/*` routes require an authenticated workspace manager; their infrastructure tools remain simulated. Historical documents and benchmark data are retained as historical evidence, not current production claims. See [the archived README](docs/LEGACY_README.md).
 
-## 📡 API Reference
-
-- `POST /api/cyberforge/execute`: Intercept and enforce policy on proposed action.
-- `GET /api/cyberforge/traces`: Chronological execution traces with canonical digests and decisions.
-- `GET /api/cyberforge/infrastructure/state`: Inspect observable simulated infrastructure state.
-- `POST /api/cyberforge/infrastructure/reset`: Reset simulated infrastructure to known baseline.
-- `GET /api/cyberforge/directory/principals`: Inspect authoritative server-side user directory.
-- `POST /api/cyberforge/approvals/{id}/revoke`: Revoke an active approval request.
-- `GET /api/cyberforge/adversarial/scenarios`: Full catalog of 21 adversarial attack scenarios.
-- `POST /api/cyberforge/adversarial/run`: Execute a single attack scenario in chosen mode.
-- `POST /api/cyberforge/benchmark/run`: Run 4-mode benchmark evaluation.
-- `GET /api/cyberforge/audit/verify`: Verify SHA-256 audit ledger hash chain integrity.
-
----
-
-## ⚠️ Known Limitations & Assumptions
-
-1. **Local Hash Chain vs WORM Ledger**: The audit ledger implements a SHA-256 hash chain with cryptographic block linking. While this detects unauthorized in-app row modification or omission, it is stored locally in SQLite. A privileged administrator on the host could theoretically rewrite the database and recompute the hash chain. Production environments should stream digests to an external immutable transparency log.
-2. **Deterministic Simulation**: All protected targets (domain controllers, workstations, firewall ACLs) are simulated in memory/SQLite to prevent destructive operations on host hardware.
-3. **Single-Node Concurrency**: Approval locking currently uses Python thread locks and SQLite transactions. Multi-node distributed deployments require distributed locks (e.g. Redis Redlock).
-
-
----
-
-## 🧭 Zero-Expertise Cyber Defense (Challenge Prototype)
-
-AegisMesh now includes a challenge-aligned prototype designed to make security incidents understandable to staff without cybersecurity expertise.
-
-- **Dashboard:** open `http://localhost:8000/defense` after starting the FastAPI server.
-- **Plain-language incident cards:** what happened, why it matters, evidence, urgency, and a recommended next step.
-- **Noise reduction demonstration:** related events are represented as grouped incident records, with search and severity/status filters.
-- **Guided response:** review, support escalation, and approval-request actions are demonstrated in the UI.
-- **Safe action boundary:** high-impact demo actions remain pending approval rather than executing.
-- **Honest status reporting:** the interface visibly states that the data is simulated and no live security sources are connected.
-
-### Prototype API
-
-| Endpoint | Purpose |
-| --- | --- |
-| `GET /api/defense/summary` | Demo-only incident counts and coverage disclosure |
-| `GET /api/defense/incidents` | List grouped incidents; optional `severity`, `status`, and `search` filters |
-| `POST /api/defense/events/ingest` | Accept a normalized JSON alert and group related events by source/type/asset |
-| `POST /api/defense/incidents/{incident_id}/response` | Record a simulated review, support request, or approval request |
-| `POST /api/defense/demo/reset` | Reset the sample incidents |
-
-Example:
+## Verification
 
 ```bash
-curl http://localhost:8000/api/defense/incidents
-curl -X POST http://localhost:8000/api/defense/events/ingest \
-  -H "Content-Type: application/json" \
-  -d '{"event_id":"demo-001","source":"Imported alert","event_type":"suspicious_login","asset":"staff-account-7","description":"Several unusual sign-in attempts were reported.","evidence":["Five failed sign-ins"]}'
-curl -X POST http://localhost:8000/api/defense/incidents/INC-1001/response \
-  -H "Content-Type: application/json" \
-  -d '{"action":"simulate_containment"}'
+python -m pip install -r requirements-dev.txt
+python -m pytest tests backend/tests -q
 ```
 
-### Important scope and limitations
+- **145 tests passed** in a freshly created Python 3.12 virtual environment. Includes actual DB/file checks, separate reviewer authorization, tampering, replay, concurrent approval use, restart persistence and transaction rollback. Tests use isolated temporary databases.
+- A real Chromium walkthrough passed login, update, approval, CSV download, external destination denial, argument tampering, replay denial, audit verification, refresh persistence and mobile layout checks. [Reproduction instructions](docs/VERIFICATION.md).
+- The Docker image built successfully and passed the same real-browser workflow against its non-root Linux runtime in offline mode.
+- The final live Groq planning check passed **7/7 handcrafted cases in one run**, with approximately **1.60 seconds median planner latency**. This is a small development evaluation, not a general accuracy or attack-prevention claim. [Raw final results](docs/evidence/planner-final.json).
+- Initial runs and the schema/prompt iteration are also preserved. [Evaluation details](docs/VERIFICATION.md).
 
-This is a **simulation-only prototype**. The seeded events are not live detections; grouped counts demonstrate incident presentation rather than a validated production correlation engine. Response actions update demo state only and do not isolate devices, disable accounts, quarantine email, or change network controls. No live email, identity, endpoint, or SIEM integration is included. Production use requires authenticated and authorized APIs, real event-source connectors, tenant isolation, durable incident storage, verified integrations, and usability/security evaluation with representative non-technical users.
+Live model evaluation (seven provider requests; may incur usage charges):
 
-The existing runtime enforcement benchmark remains limited to its documented scenario set. It is not a claim of universal cyberattack prevention or real-world threat-detection accuracy.
+```bash
+python scripts/evaluate_planner.py --live
+```
 
-See [ZERO_EXPERTISE_CYBER_DEFENSE.md](docs/ZERO_EXPERTISE_CYBER_DEFENSE.md) for the acceptance criteria and implementation roadmap.
+## Security boundaries and limitations
 
----
+- Single organization, single-process reference deployment. It is not a multi-tenant security product or an OS-level sandbox.
+- Passwords use salted PBKDF2; bearer sessions expire after one hour. Keep the local credentials, signing keys and database private. HTTPS and managed identity are needed before remote deployment.
+- Ticket content and model plans are untrusted. Models receive policies and optional synthetic ticket text, never stored credentials or exported contact records.
+- Approvals expire after 15 minutes and bind requester, tool, full arguments and policy version. An approval cannot override a prohibited destination.
+- The local audit chain detects record modifications. A host administrator with database and signing-key access can rewrite history; an external anchor is not implemented. A deleted tail cannot be detected without an external trusted checkpoint.
+- Atomicity applies to the supported SQLite tools. Extending to external APIs requires idempotency, reconciliation and verified external state; a local transaction cannot roll back an external service.
+- The original 16/16 blocked attacks are handcrafted simulated cases. The detection-only baseline is a keyword heuristic, not a live-model guardrail benchmark.
+- No real customer impact, adoption, financial savings or regulatory compliance is claimed.
 
-## 📜 License
+## Showcase materials
 
-CyberForge is open-source software licensed under the [Apache License 2.0](LICENSE).
+- [Eight-minute presentation and rehearsal runbook](docs/SHOWCASE_RUNBOOK.md)
+- [How Codex was used, with evidence](docs/BUILD_WITH_CODEX.md)
+- [Verification and evaluation scope](docs/VERIFICATION.md)
+- [API guide and integration example](docs/OPERATIONS_API.md)
+
+Apache 2.0. Built by Sanjayram P.

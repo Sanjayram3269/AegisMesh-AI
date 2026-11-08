@@ -10,6 +10,11 @@ from fastapi.testclient import TestClient
 from backend.app.main import app
 
 client = TestClient(app)
+from app.operations.api import operations
+import json
+credentials = json.loads((operations().store.directory / "credentials.json").read_text())
+login = client.post("/api/ops/login", json=credentials["manager"])
+client.headers["Authorization"] = "Bearer " + login.json()["token"]
 
 
 def test_1_cyberforge_api_info():
@@ -24,7 +29,7 @@ def test_2_cyberforge_overview():
     res = client.get("/api/cyberforge/overview")
     assert res.status_code == 200
     data = res.json()
-    assert data["status"] == "SECURE"
+    assert data["status"] == "CONTROLLED_LAB"
     assert "CyberForge" in data["platform_name"]
     assert data["total_protected_tools"] >= 6
     assert data["total_scenarios_in_suite"] >= 20

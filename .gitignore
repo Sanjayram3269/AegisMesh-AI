@@ -48,6 +48,10 @@ logs/
 htmlcov/
 .coverage
 .pytest_cache/
+.ruff_cache/
+.local/
+playwright-report/
+test-results/
 
 # Distribution
 *.tar.gz

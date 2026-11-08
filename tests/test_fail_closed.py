@@ -15,6 +15,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'backend'))
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 import pytest
+from agents.enforcement.identity_registry import AUTHORITATIVE_DIRECTORY
 from agents.enforcement.canonical_action import CanonicalAction, PrincipalIdentity, ResourceScope
 from agents.enforcement.fail_closed import (
     FAIL_CLOSED_GUARD, SecurityFailureMode, MissingAuthorizationContextError,
@@ -32,7 +33,7 @@ def test_1_policy_db_failure_fails_closed():
     """SECURITY INVARIANT: Policy DB failure must deny protected action."""
     action = CanonicalAction(
         action_id="ACT-FAIL-01",
-        principal=PrincipalIdentity(user_id="U_ADMIN", role="ADMIN"),
+        principal=PrincipalIdentity(user_id="U_ADMIN", role="ADMIN", authorization_token=AUTHORITATIVE_DIRECTORY["U_ADMIN"].api_token),
         tool_name="cloud_resource_deploy",
         tool_version="2.0.0",
         operation="DEPLOY",
@@ -54,7 +55,7 @@ def test_2_policy_timeout_fails_closed():
     """SECURITY INVARIANT: Policy retrieval timeout must abort execution."""
     action = CanonicalAction(
         action_id="ACT-FAIL-02",
-        principal=PrincipalIdentity(user_id="U_ENG", role="ENGINEER"),
+        principal=PrincipalIdentity(user_id="U_ENG", role="ENGINEER", authorization_token=AUTHORITATIVE_DIRECTORY["U_ENG"].api_token),
         tool_name="database_execute",
         tool_version="1.2.0",
         operation="EXECUTE",
@@ -72,7 +73,7 @@ def test_3_model_provider_error_fails_closed():
     """SECURITY INVARIANT: Upstream model failure must never permit tool execution."""
     action = CanonicalAction(
         action_id="ACT-FAIL-03",
-        principal=PrincipalIdentity(user_id="U_USER", role="GENERAL_USER"),
+        principal=PrincipalIdentity(user_id="U_USER", role="GENERAL_USER", authorization_token=AUTHORITATIVE_DIRECTORY["U_USER"].api_token),
         tool_name="payment_transfer",
         tool_version="1.0.0",
         operation="TRANSFER",
@@ -110,7 +111,7 @@ def test_5_mock_provider_in_production_cannot_authorize():
     """SECURITY INVARIANT: Mock provider fallback in production mode is blocked."""
     action = CanonicalAction(
         action_id="ACT-FAIL-05",
-        principal=PrincipalIdentity(user_id="U_ADMIN", role="ADMIN"),
+        principal=PrincipalIdentity(user_id="U_ADMIN", role="ADMIN", authorization_token=AUTHORITATIVE_DIRECTORY["U_ADMIN"].api_token),
         tool_name="cloud_resource_deploy",
         tool_version="2.0.0",
         operation="DEPLOY",

@@ -1,0 +1,22 @@
+{
+  "browser": "Chromium",
+  "checks": [
+    "agent login",
+    "actual ticket update",
+    "separate manager login",
+    "approved-action tampering denied",
+    "exact approval",
+    "real CSV download",
+    "approval replay denied",
+    "external destination denied",
+    "proposal tampering denied",
+    "proposal replay denied",
+    "audit verification",
+    "policy evidence",
+    "refresh persistence",
+    "mobile viewport",
+    "no JavaScript errors"
+  ],
+  "passed": true,
+  "screenshots": ".local\\docker-browser-results"
+}

@@ -1,0 +1,11 @@
+{
+  "recorded_at": "2026-11-08T21:17:57.762502+00:00",
+  "command": "python -m pytest tests backend/tests -q",
+  "environment": "Windows, Python 3.12.10, fresh virtual environment",
+  "tests": 145,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "duration_seconds": 26.89,
+  "scope": "Local automated checks; not a production security certification"
+}

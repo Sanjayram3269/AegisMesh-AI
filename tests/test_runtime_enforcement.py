@@ -18,6 +18,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 import pytest
 from datetime import datetime, timezone, timedelta
+from agents.enforcement.identity_registry import AUTHORITATIVE_DIRECTORY
 from agents.enforcement.canonical_action import CanonicalAction, PrincipalIdentity, ResourceScope
 from agents.enforcement.tools import (
     TOOL_REGISTRY, DirectExecutionBypassError, reset_all_tool_side_effects,
@@ -59,7 +60,7 @@ def test_2_unauthorized_action_denied_zero_side_effects():
 
     action = CanonicalAction(
         action_id="ACT-001",
-        principal=PrincipalIdentity(user_id="U_INTERN", role="INTERN"),
+        principal=PrincipalIdentity(user_id="U_INTERN", role="INTERN", authorization_token=AUTHORITATIVE_DIRECTORY["U_INTERN"].api_token),
         tool_name="database_execute",
         tool_version="1.2.0",
         operation="EXECUTE",
@@ -83,7 +84,7 @@ def test_3_schema_validation_blocks_invalid_arguments():
     # Missing required 'recipient_account' and non-numeric amount
     action = CanonicalAction(
         action_id="ACT-002",
-        principal=PrincipalIdentity(user_id="U_FIN", role="FINANCE_MANAGER", clearance_level="PRIVILEGED"),
+        principal=PrincipalIdentity(user_id="U_FIN", role="FINANCE_MANAGER", clearance_level="PRIVILEGED", authorization_token=AUTHORITATIVE_DIRECTORY["U_FIN"].api_token),
         tool_name="payment_transfer",
         tool_version="1.0.0",
         operation="TRANSFER",
@@ -105,7 +106,7 @@ def test_4_require_approval_blocks_execution_until_approved():
 
     action = CanonicalAction(
         action_id="ACT-003",
-        principal=PrincipalIdentity(user_id="U_ANALYST", role="ANALYST"),
+        principal=PrincipalIdentity(user_id="U_ANALYST", role="ANALYST", authorization_token=AUTHORITATIVE_DIRECTORY["U_ANALYST"].api_token),
         tool_name="customer_data_export",
         tool_version="1.1.0",
         operation="TRANSFER",
@@ -133,11 +134,11 @@ def test_4_require_approval_blocks_execution_until_approved():
     # Human reviewer approves the request
     APPROVAL_MANAGER.review_approval(
         approval_id=approval_id,
-        reviewer_id="CISO_01",
+        reviewer_id="U_CISO",
         reviewer_role="CISO",
         decision="APPROVED",
         comments="Approved for Q3 vendor analysis."
-    )
+    , auth_token=AUTHORITATIVE_DIRECTORY["U_CISO"].api_token)
 
     # Subsequent execution with approved token succeeds
     res_exec = ENFORCEMENT_GATEWAY.enforce_and_execute(action, approval_id=approval_id)
@@ -154,7 +155,7 @@ def test_5_argument_mutation_after_approval_rejected():
 
     action = CanonicalAction(
         action_id="ACT-004",
-        principal=PrincipalIdentity(user_id="U_FIN", role="FINANCE_MANAGER"),
+        principal=PrincipalIdentity(user_id="U_FIN", role="FINANCE_MANAGER", authorization_token=AUTHORITATIVE_DIRECTORY["U_FIN"].api_token),
         tool_name="payment_transfer",
         tool_version="1.0.0",
         operation="TRANSFER",
@@ -166,15 +167,15 @@ def test_5_argument_mutation_after_approval_rejected():
     app_req = APPROVAL_MANAGER.create_approval_request(action, required_role="CISO")
     APPROVAL_MANAGER.review_approval(
         approval_id=app_req.approval_id,
-        reviewer_id="CISO_01",
+        reviewer_id="U_CISO",
         reviewer_role="CISO",
         decision="APPROVED"
-    )
+    , auth_token=AUTHORITATIVE_DIRECTORY["U_CISO"].api_token)
 
     # Attacker mutates amount to $500,000 using the same approval ID
     tampered_action = CanonicalAction(
         action_id="ACT-004",
-        principal=PrincipalIdentity(user_id="U_FIN", role="FINANCE_MANAGER"),
+        principal=PrincipalIdentity(user_id="U_FIN", role="FINANCE_MANAGER", authorization_token=AUTHORITATIVE_DIRECTORY["U_FIN"].api_token),
         tool_name="payment_transfer",
         tool_version="1.0.0",
         operation="TRANSFER",
@@ -194,7 +195,7 @@ def test_6_approval_replay_rejected():
     """SECURITY INVARIANT: An approval cannot be reused once consumed."""
     action = CanonicalAction(
         action_id="ACT-005",
-        principal=PrincipalIdentity(user_id="U_FIN", role="FINANCE_MANAGER", clearance_level="PRIVILEGED"),
+        principal=PrincipalIdentity(user_id="U_FIN", role="FINANCE_MANAGER", clearance_level="PRIVILEGED", authorization_token=AUTHORITATIVE_DIRECTORY["U_FIN"].api_token),
         tool_name="payment_transfer",
         tool_version="1.0.0",
         operation="TRANSFER",
@@ -205,10 +206,10 @@ def test_6_approval_replay_rejected():
     app_req = APPROVAL_MANAGER.create_approval_request(action, required_role="MANAGER")
     APPROVAL_MANAGER.review_approval(
         approval_id=app_req.approval_id,
-        reviewer_id="MGR_01",
+        reviewer_id="U_CISO",
         reviewer_role="MANAGER",
         decision="APPROVED"
-    )
+    , auth_token=AUTHORITATIVE_DIRECTORY["U_CISO"].api_token)
 
     # First execution succeeds
     res1 = ENFORCEMENT_GATEWAY.enforce_and_execute(action, approval_id=app_req.approval_id)
@@ -226,7 +227,7 @@ def test_7_expired_approval_rejected():
     """SECURITY INVARIANT: Expired approvals are rejected."""
     action = CanonicalAction(
         action_id="ACT-006",
-        principal=PrincipalIdentity(user_id="U_ANALYST", role="ANALYST"),
+        principal=PrincipalIdentity(user_id="U_ANALYST", role="ANALYST", authorization_token=AUTHORITATIVE_DIRECTORY["U_ANALYST"].api_token),
         tool_name="customer_data_export",
         tool_version="1.1.0",
         operation="TRANSFER",
@@ -241,17 +242,17 @@ def test_7_expired_approval_rejected():
     with pytest.raises(ApprovalExpiredError):
         APPROVAL_MANAGER.review_approval(
             approval_id=app_req.approval_id,
-            reviewer_id="MGR_01",
+            reviewer_id="U_CISO",
             reviewer_role="MANAGER",
             decision="APPROVED"
-        )
+        , auth_token=AUTHORITATIVE_DIRECTORY["U_CISO"].api_token)
 
 
 def test_8_cryptographic_audit_ledger_chain_integrity():
     """SECURITY INVARIANT: Audit ledger maintains verifiable SHA-256 hash chaining."""
     action = CanonicalAction(
         action_id="ACT-007",
-        principal=PrincipalIdentity(user_id="U_ENG", role="ENGINEER", clearance_level="PRIVILEGED"),
+        principal=PrincipalIdentity(user_id="U_ENG", role="ENGINEER", clearance_level="PRIVILEGED", authorization_token=AUTHORITATIVE_DIRECTORY["U_ENG"].api_token),
         tool_name="database_execute",
         tool_version="1.2.0",
         operation="QUERY",
@@ -284,7 +285,7 @@ def test_9_fail_closed_audit_guarantee():
 
     action = CanonicalAction(
         action_id="ACT-008",
-        principal=PrincipalIdentity(user_id="U_ADMIN", role="ADMIN", clearance_level="ADMIN"),
+        principal=PrincipalIdentity(user_id="U_ADMIN", role="ADMIN", clearance_level="ADMIN", authorization_token=AUTHORITATIVE_DIRECTORY["U_ADMIN"].api_token),
         tool_name="cloud_resource_deploy",
         tool_version="2.0.0",
         operation="DEPLOY",
@@ -324,7 +325,7 @@ def test_10_soc_active_response_tools_protection():
     # Authorized gateway execution works with single-use ticket
     action = CanonicalAction(
         action_id="ACT-SOC-001",
-        principal=PrincipalIdentity(user_id="U_SOC_ANALYST", role="ANALYST", clearance_level="PRIVILEGED"),
+        principal=PrincipalIdentity(user_id="U_SOC_ANALYST", role="ANALYST", clearance_level="PRIVILEGED", authorization_token=AUTHORITATIVE_DIRECTORY["U_SOC_ANALYST"].api_token),
         tool_name="isolate_host",
         tool_version="1.0.0",
         operation="EXECUTE",

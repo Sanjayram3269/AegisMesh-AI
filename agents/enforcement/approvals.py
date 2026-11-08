@@ -18,6 +18,7 @@ import threading
 import uuid
 from typing import Any, Dict, List, Optional
 from agents.enforcement.canonical_action import CanonicalAction
+from agents.enforcement.identity_registry import IDENTITY_SERVICE, IdentityVerificationError
 
 logger = logging.getLogger("cyberforge.approvals")
 
@@ -70,7 +71,8 @@ class ApprovalUnauthorizedReviewerError(ApprovalError):
     pass
 
 
-APPROVAL_SIGNING_KEY = os.getenv("CYBERFORGE_APPROVAL_KEY", "cyberforge-secure-hmac-key-2026").encode("utf-8")
+from agents.enforcement.key_material import signing_key
+APPROVAL_SIGNING_KEY = signing_key("CYBERFORGE_APPROVAL_KEY")
 
 
 @dataclass
@@ -240,8 +242,14 @@ class ApprovalManager:
         reviewer_role: str,
         decision: str,  # "APPROVED" or "REJECTED"
         comments: str = "",
+        auth_token: Optional[str] = None,
     ) -> ApprovalRequest:
         """Processes reviewer decision with authorization and expiration checks."""
+        try:
+            reviewer = IDENTITY_SERVICE.verify_and_resolve_principal(reviewer_id, reviewer_role, auth_token)
+        except IdentityVerificationError as e:
+            raise ApprovalUnauthorizedReviewerError(str(e)) from None
+        reviewer_role = reviewer.role
         with self._lock:
             req = self._approvals.get(approval_id)
             if not req:
@@ -287,8 +295,14 @@ class ApprovalManager:
         reviewer_id: str,
         reviewer_role: str,
         reason: str = "Administrative revocation",
+        auth_token: Optional[str] = None,
     ) -> ApprovalRequest:
         """Revokes a previously issued approval request before or after review."""
+        try:
+            reviewer = IDENTITY_SERVICE.verify_and_resolve_principal(reviewer_id, reviewer_role, auth_token)
+        except IdentityVerificationError as e:
+            raise ApprovalUnauthorizedReviewerError(str(e)) from None
+        reviewer_role = reviewer.role
         with self._lock:
             req = self._approvals.get(approval_id)
             if not req:
@@ -323,6 +337,8 @@ class ApprovalManager:
                 raise ApprovalNotFoundError(f"Approval reference '{approval_id}' not found.")
 
             # 1. Revocation check
+            if not hmac.compare_digest(req.signature, req.compute_signature()):
+                raise ApprovalInvalidSignatureError("Approval signature verification failed.")
             if req.status == ApprovalStatus.REVOKED:
                 raise ApprovalRevokedError(f"Approval '{approval_id}' has been revoked.")
 

@@ -34,7 +34,9 @@ async def lifespan(app: FastAPI):
     logger.info('=' * 60)
     logger.info(f'  Environment:  {settings.app_env}')
     logger.info(f'  Demo Mode:    {settings.demo_mode}')
-    logger.info(f'  LLM Provider: {settings.llm_provider}')
+    from app.operations.provider import status as planner_status
+    logger.info(f'  Operations planner: {planner_status()["provider"]} / {planner_status().get("model", "unconfigured")}')
+    logger.info(f'  Legacy governance provider setting: {settings.llm_provider}')
     logger.info(f'  Database:     {settings.database_url}')
     logger.info('=' * 60)
     
@@ -79,12 +81,20 @@ app.include_router(policy_evolution.router)
 app.include_router(cyberforge.router, prefix='/api/cyberforge', tags=['CyberForge Security Intelligence'])
 app.include_router(defense.router, prefix='/api')
 
+from app.operations.api import install, operations
+install(app)
+
 @app.get('/', response_class=FileResponse)
 async def serve_dashboard():
-    static_file = os.path.join(os.path.dirname(__file__), 'static', 'index.html')
+    operations()  # Initialize local credentials and durable workspace on first visit.
+    static_file = os.path.join(os.path.dirname(__file__), 'static', 'operations.html')
     if os.path.exists(static_file):
         return FileResponse(static_file)
     return FileResponse(os.path.join(project_root, 'backend', 'app', 'static', 'index.html'))
+
+@app.get('/lab', response_class=FileResponse)
+async def serve_legacy_lab():
+    return FileResponse(os.path.join(os.path.dirname(__file__), 'static', 'index.html'))
 
 @app.get('/defense', response_class=FileResponse)
 async def serve_zero_expertise_dashboard():
