@@ -6,7 +6,24 @@ A working AI operations assistant with policy-grounded proposals, authenticated 
 
 The flagship console uses a dark navy/violet interface and an interactive WebGL agent mesh. Select a rendered stage to inspect its authority and latest observation. During a request, real server events drive processing states; trace playback is explicitly labelled and never executes another business action. The workspace, approval queue, searchable execution ledger, policy registry and adversarial lab share the same live runtime view.
 
-![AegisMesh interactive 3D agent console](docs/images/overview.png)
+## Frontend screenshots
+
+Actual browser captures of the working console. Click any screenshot to view it at full size. The overview, assistant, approvals and ledger were captured during the live Groq walkthrough; the policy registry and adversarial lab were captured during the isolated browser verification.
+
+| Agent overview · interactive 3D mesh | AI workspace · proposals and live stages |
+| --- | --- |
+| [![Agent overview with selectable WebGL agents](docs/images/overview.png)](docs/images/overview.png) | [![AI workspace with assistant proposals and stage telemetry](docs/images/workspace.png)](docs/images/workspace.png) |
+| **Approval queue · separate manager review** | **Execution ledger · searchable evidence** |
+| [![Approval queue with exact-action review](docs/images/approval.png)](docs/images/approval.png) | [![Execution ledger with decisions and verified outcomes](docs/images/evidence.png)](docs/images/evidence.png) |
+| **Policy registry · inspectable rules** | **Adversarial lab · explicit boundary checks** |
+| [![Policy registry showing applicable business rules](docs/images/policies.png)](docs/images/policies.png) | [![Adversarial lab with explicit tool-call security checks](docs/images/checks.png)](docs/images/checks.png) |
+
+<details>
+<summary>View the mobile console at 390px</summary>
+
+![Responsive mobile console](docs/images/mobile.png)
+
+</details>
 
 ## The problem and the first use case
 
@@ -77,12 +94,10 @@ The live verification used **Groq serving `openai/gpt-oss-120b`**. That is a Gro
 1. Sign in as the support agent. Ask **“Summarize the support tickets”**. Inspect the action and policy evidence, then confirm it.
 2. Ask **“Resolve ticket 101”**. Confirm; inspect the before/after status and independent database read.
 3. Ask **“Export a customer report including email and phone”**. Request approval. No report exists yet.
-4. Open **Approvals**, authenticate the manager, and approve the exact action. Back as requester, try **Test changed destination**: rejected. The original approval remains available.
+4. Open **Approval queue**, authenticate the manager, and approve the exact action. Back as requester, try **Test changed destination**: rejected. The original approval remains available.
 5. Execute the original approved action and download the real CSV. Try **Test approval replay**: rejected.
-6. In **Security checks**, test an external destination and inspect ticket 104's planted instruction. The explicit boundary tests are labelled separately from observed model behavior.
-7. Open **Activity & evidence** to inspect receipts, provider latency, action digest, policy passages and local chain verification. Export the evidence JSON.
-
-![Exact-action approval](docs/images/approval.png)
+6. In **Adversarial lab**, test an external destination and inspect ticket 104's planted instruction. The explicit boundary tests are labelled separately from observed model behavior.
+7. Open **Execution ledger** to inspect receipts, provider latency, action digest, policy passages and local chain verification. Export the evidence JSON.
 
 ## Architecture and trust boundary
 
